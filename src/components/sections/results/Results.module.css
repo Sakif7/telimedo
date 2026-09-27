@@ -1,0 +1,23 @@
+/* Data first: the four figures lead, set large between hairlines. */
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); }
+.stat { display: grid; gap: 10px; align-content: start; padding: 28px 24px 30px 0; }
+.stat + .stat { padding-left: 24px; border-left: 1px solid var(--line); }
+.stat b { font: 500 clamp(44px, 5.4vw, 84px)/.95 var(--display); letter-spacing: -0.05em; font-variant-numeric: tabular-nums; justify-self: start; }
+.stat span { color: var(--ink-2); font-size: 16px; }
+/* then what they mean, beside a customer's own words */
+.split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px clamp(32px, 6vw, 96px); align-items: start; margin-top: clamp(48px, 6vw, 88px); }
+.split h2 { font-size: clamp(28px, 2.9vw, 44px); line-height: 1.04; max-width: 11em; }
+.quote { margin: 0; display: grid; gap: 28px; }
+.quote blockquote { margin: 0; position: relative; padding-left: clamp(0px, 6vw, 88px); }
+.quote blockquote::before { content: "“"; position: absolute; left: 0; top: -.08em; font: 500 clamp(64px, 8vw, 120px)/1 var(--display); color: var(--coral); }
+.quote blockquote p { margin: 0; font: 500 clamp(26px, 2.8vw, 42px)/1.2 var(--display); letter-spacing: -0.03em; }
+.quote figcaption { display: flex; align-items: center; gap: 14px; padding-left: clamp(0px, 6vw, 88px); color: var(--ink-2); font-size: 15px; }
+.quote figcaption :global(.av) { width: 46px; height: 46px; background: var(--coral-soft); color: var(--coral-ink); }
+.quote figcaption b { display: block; color: var(--ink); }
+.quote figcaption small { display: inline; font-size: 14px; color: var(--ink-3); }
+@media (max-width: 899px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat:nth-child(3) { padding-left: 0; border-left: 0; }
+  .stat:nth-child(n+3) { padding-top: 28px; border-top: 1px solid var(--line); }
+  .split { grid-template-columns: 1fr; }
+}

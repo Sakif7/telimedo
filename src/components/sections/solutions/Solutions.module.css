@@ -1,0 +1,36 @@
+.solutions { background: var(--bg-2); }
+.tabs { position: relative; display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 5px; margin-bottom: 44px; border-radius: var(--r-pill); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); max-width: 100%; }
+.pill { position: absolute; left: 0; top: 0; border-radius: var(--r-pill); background: var(--ink); transition: transform .5s var(--ease), width .5s var(--ease), height .5s var(--ease); }
+.tabs button { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; border: 0; background: transparent; padding: 12px 18px; border-radius: var(--r-pill); color: var(--ink-2); font: 650 15px/1.1 var(--body); cursor: pointer; transition: color .35s ease; }
+.tabs button[aria-selected="true"] { color: var(--bg); }
+/* until the pill has been measured, the selected tab carries its own fill */
+.tabs:not([data-pill]) button[aria-selected="true"] { background: var(--ink); }
+/* phones show the short labels so the three tabs stay on one row */
+.tabs .short { display: none; }
+.panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 6vw, 96px); align-items: start; }
+.panel[hidden] { display: none; }
+.panel.enter .panelCopy, .panel.enter .metric { animation: rise .7s var(--ease) both; }
+.panel.enter .metric:nth-child(2) { animation-delay: .07s; }
+.panel.enter .metric:nth-child(3) { animation-delay: .14s; }
+@keyframes rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+.panelCopy h3 { font-size: clamp(28px, 2.8vw, 42px); line-height: 1.04; font-weight: 540; letter-spacing: -0.035em; margin-bottom: 18px; }
+.panelCopy > p { color: var(--ink-2); margin: 0 0 24px; font-size: 17px; max-width: 34rem; }
+.panelCopy > p.more { margin-bottom: 32px; padding-top: 18px; border-top: 1px solid var(--line-2); color: var(--ink); font-size: 15.5px; }
+.metrics { display: grid; border-top: 1px solid var(--line-2); }
+.metric { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr); gap: 20px; align-items: baseline; padding: 24px 0; border-bottom: 1px solid var(--line-2); }
+.metric b { font: 520 clamp(40px, 4.2vw, 60px)/1 var(--display); letter-spacing: -0.045em; font-variant-numeric: tabular-nums; }
+.metric span { font-size: 17px; font-weight: 600; line-height: 1.35; }
+.metric small { display: block; margin-top: 4px; font-size: 14.5px; font-weight: 400; color: var(--ink-3); }
+/* patients: short statements instead of figures */
+.metric.point b { font: 600 21px/1.2 var(--display); letter-spacing: -0.02em; }
+.metric.point span { font-weight: 500; color: var(--ink-2); }
+@media (max-width: 899px) {
+  .panel { grid-template-columns: 1fr; }
+  .metric { grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr); gap: 16px; padding: 20px 0; }
+}
+@media (max-width: 560px) {
+  .tabs { display: flex; flex-wrap: nowrap; }
+  .tabs button { flex: 1 1 0; justify-content: center; padding: 11px 10px; font-size: 14px; }
+  .tabs .long { display: none; }
+  .tabs .short { display: inline; }
+}
