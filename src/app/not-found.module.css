@@ -1,0 +1,15 @@
+.page { min-height: 100svh; display: grid; padding: 10px; }
+.card { position: relative; overflow: hidden; isolation: isolate; border-radius: var(--radius); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); align-items: center; gap: 24px; padding: clamp(28px, 5vw, 72px) var(--gutter); }
+.bg { --gx: 72%; --fx: 74%; }
+.copy { position: relative; z-index: 2; display: grid; gap: 22px; justify-items: start; max-width: 34rem; }
+.brand { display: inline-flex; margin-bottom: clamp(24px, 6vh, 64px); }
+.brand svg { height: 27px; width: auto; display: block; }
+.copy h1 { font-size: clamp(40px, 5vw, 76px); line-height: .98; }
+.stage { position: relative; z-index: 1; align-self: stretch; min-height: 420px; height: 100%; container-type: size; }
+@media (max-width: 899px) {
+  .page { padding: 8px; }
+  .card { grid-template-columns: 1fr; padding: 24px 16px; }
+  .bg { --gx: 50%; --fx: 50%; }
+  .stage { order: -1; min-height: 300px; height: 300px; }
+  .brand { margin-bottom: 8px; }
+}
