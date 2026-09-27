@@ -188,3 +188,76 @@ test.describe('reduced motion', () => {
     expectNoProblems(problems);
   });
 });
+
+test.describe('intro and pages', () => {
+  test('the buddy peeks in, rises into place and starts talking', async ({ page, isMobile }) => {
+    const problems = watchConsole(page);
+    // no calm mode, and time for the software renderer to start before the still would take over
+    await page.addInitScript(() => {
+      window.__buddyLateMs = 120_000;
+    });
+    await openHome(page, { calm: false });
+    await expect(page.locator('html')).toHaveClass(/buddy-in/, { timeout: 60_000 });
+    if (!isMobile) {
+      const bubble = page.locator('[data-studio="hero"] [data-at]');
+      await expect(bubble).toHaveCSS('opacity', '1');
+      await expect(bubble).not.toBeEmpty();
+    }
+    expectNoProblems(problems);
+  });
+
+  test('the nav goes to the pages, each with the buddy in its studio', async ({ page, isMobile }) => {
+    const problems = watchConsole(page);
+    await openHome(page);
+    if (isMobile) {
+      await page.getByRole('button', { name: 'Open menu' }).click();
+      await page.locator('#mobile-nav').getByRole('link', { name: 'Security' }).click();
+    } else {
+      await page.getByRole('navigation', { name: 'Main' }).first().getByRole('link', { name: 'Security' }).click();
+    }
+    await expect(page).toHaveURL(/\/security$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Security' })).toBeVisible();
+    await expect(page.locator('[data-studio="page"]')).toBeVisible();
+    await page.waitForFunction(() => window.__buddy && (window.__buddy.ready() || window.__buddy.no3d()), null, { timeout: 180_000 });
+    expect(await page.evaluate(() => window.__buddy!.canvases())).toBeLessThanOrEqual(1);
+    if (!isMobile) await expect(page.getByRole('navigation', { name: 'Main' }).first().getByRole('link', { name: 'Security' })).toHaveAttribute('aria-current', 'page');
+    // the short version on the home page
+    await page.getByRole('link', { name: 'Read the short version' }).click();
+    await expect(page).toHaveURL(/\/#security$/);
+    await expect(page.locator('#security')).toBeInViewport();
+    expectNoProblems(problems);
+  });
+
+  test('the doors open once on a first visit, and not again in the same visit', async ({ page }) => {
+    const problems = watchConsole(page);
+    await openHome(page, { doors: true });
+    const html = page.locator('html');
+    await expect(html).toHaveClass(/doors-open/, { timeout: 15_000 });
+    await expect(html).toHaveClass(/doors-done/, { timeout: 5_000 });
+    await expect(page.locator('[data-part="doors"]')).toBeHidden();
+    await page.reload();
+    await expect(html).toHaveClass(/doors-done/);
+    await expect(page.locator('[data-part="doors"]')).toBeHidden();
+    expectNoProblems(problems);
+  });
+
+  test('unknown pages get the 404 studio', async ({ page }) => {
+    const res = await page.goto('/no-such-page');
+    expect(res?.status()).toBe(404);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText("This page isn't here.");
+    await expect(page.locator('[data-studio="page"]')).toBeVisible();
+  });
+
+  test('the theme switch changes the theme and remembers it', async ({ page }) => {
+    await openHome(page);
+    // the header's switch (the dashboard mock on the tablet has its own)
+    const toggle = page.getByRole('banner').getByRole('button', { name: 'Dark theme' });
+    const before = await page.evaluate(() => matchMedia('(prefers-color-scheme: dark)').matches);
+    await toggle.click();
+    const want = before ? 'light' : 'dark';
+    await expect(page.locator('html')).toHaveAttribute('data-theme', want);
+    await expect(toggle).toHaveAttribute('aria-pressed', String(want === 'dark'));
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', want);
+  });
+});

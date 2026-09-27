@@ -10,12 +10,17 @@ export function watchConsole(page: Page) {
   return problems;
 }
 
-/** Opens the page with the test hooks on and waits for the 3D (or the no-WebGL fallback). */
-export async function openHome(page: Page, { calm = true } = {}) {
-  await page.addInitScript((c) => {
-    window.__buddyDtCap = 1;
-    if (c) window.__buddyCalm = true;
-  }, calm);
+/** Opens the page with the test hooks on and waits for the 3D (or the no-WebGL fallback).
+    The first-visit doors are skipped (as on a repeat visit) unless a test asks for them. */
+export async function openHome(page: Page, { calm = true, doors = false } = {}) {
+  await page.addInitScript(
+    ([c, d]) => {
+      window.__buddyDtCap = 1;
+      if (c) window.__buddyCalm = true;
+      if (!d) sessionStorage.setItem('telimedo:doors', '1');
+    },
+    [calm, doors],
+  );
   await page.goto('/', { waitUntil: 'load' });
   await page.waitForFunction(() => window.__buddy && (window.__buddy.ready() || window.__buddy.no3d()), null, { timeout: 180_000 });
   await page.evaluate(() => document.fonts.ready);
