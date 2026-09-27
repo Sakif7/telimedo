@@ -1,0 +1,142 @@
+/* Design tokens, both themes. Light sits on bare :root; dark overrides follow the
+   system preference unless data-theme="light" forces light, and data-theme="dark"
+   forces dark. Components never use raw hex values (the product mock and 3D
+   materials are the exceptions). */
+:root {
+  --bg: #F2F6F7;
+  --bg-2: #E9F0F2;
+  --surface: #FFFFFF;
+  --surface-2: #F6F9FA;
+  --ink: #12212A;
+  --ink-2: #435660;
+  --ink-3: #5A6E77;
+  --ink-mute: #7A8F98;
+  --line: #D9E4E7;
+  --line-2: #C2D2D7;
+  --coral: #F77F7F;
+  --coral-hi: #F46C6C;
+  --coral-ink: #B23D3B;
+  --coral-soft: #FCE8E6;
+  --aqua: #4FC3D9;
+  --aqua-ink: #0A6C7F;
+  --aqua-soft: #DDF3F6;
+  --good: #1A7F53;
+  --btn-ink: #12212A;
+  --studio-top: #DCF1F5;
+  --studio-bot: #F8E6E2;
+  --studio-glow: rgba(255, 255, 255, .92);
+  --studio-floor: rgba(18, 33, 42, .10);
+  --studio-line: rgba(18, 33, 42, .075);
+  --vf: rgba(18, 33, 42, .32);
+  --glass: rgba(255, 255, 255, .74);
+  --glass-line: rgba(255, 255, 255, .95);
+  --glass-shadow: 0 18px 40px -22px rgba(18, 33, 42, .38);
+  --shadow-1: 0 1px 2px rgba(18, 33, 42, .05), 0 12px 32px -18px rgba(18, 33, 42, .2);
+  --shadow-2: 0 50px 90px -50px rgba(18, 33, 42, .45);
+  --header-bg: rgba(255, 255, 255, .7);
+  --header-line: rgba(18, 33, 42, .07);
+  --ph: rgba(247, 127, 127, .2);
+  --band: #0A151A;
+  --band-2: #10212A;
+  --band-3: #15303A;
+  --band-ink: #E6F1F3;
+  --band-ink-2: #9BB0B8;
+  --band-line: rgba(255, 255, 255, .09);
+  --scene-mode: light;
+  --poster-l: url(/images/poster-light.webp);
+  --poster-d: url(/images/poster-dark.webp);
+  --poster: var(--poster-l);
+  --gutter: clamp(16px, 4.4vw, 72px);
+  --maxw: 1320px;
+  --header-space: 92px;
+  /* radius scale: tiny UI, inputs and small cards, cards and vignettes, studios (--radius), pills */
+  --r-xs: 6px;
+  --r-sm: 12px;
+  --r-md: 20px;
+  --radius: 30px;
+  --r-pill: 999px;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --display: var(--font-display), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: var(--font-mono), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #071116;
+    --bg-2: #0A171D;
+    --surface: #0D1A20;
+    --surface-2: #112128;
+    --ink: #E6F1F3;
+    --ink-2: #A3B6BE;
+    --ink-3: #849AA2;
+    --ink-mute: #5B7078;
+    --line: #1A2B33;
+    --line-2: #284049;
+    --coral-ink: #FF9E9A;
+    --coral-soft: #36201F;
+    --aqua-ink: #7FD6E6;
+    --aqua-soft: #0E2A32;
+    --good: #5BD69A;
+    --studio-top: #0E2931;
+    --studio-bot: #081217;
+    --studio-glow: rgba(79, 195, 217, .2);
+    --studio-floor: rgba(0, 0, 0, .45);
+    --studio-line: rgba(127, 214, 230, .09);
+    --vf: rgba(230, 241, 243, .3);
+    --glass: rgba(13, 26, 32, .72);
+    --glass-line: rgba(255, 255, 255, .09);
+    --glass-shadow: 0 18px 40px -20px rgba(0, 0, 0, .7);
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, .4), 0 12px 32px -18px rgba(0, 0, 0, .7);
+    --shadow-2: 0 50px 90px -50px rgba(0, 0, 0, .85);
+    --header-bg: rgba(9, 19, 24, .66);
+    --header-line: rgba(255, 255, 255, .07);
+    --ph: rgba(247, 127, 127, .24);
+    --band: #0C1B21;
+    --band-2: #11252D;
+    --band-3: #163139;
+    --scene-mode: dark;
+    --poster: var(--poster-d);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --poster: var(--poster-d);
+  --bg: #071116;
+  --bg-2: #0A171D;
+  --surface: #0D1A20;
+  --surface-2: #112128;
+  --ink: #E6F1F3;
+  --ink-2: #A3B6BE;
+  --ink-3: #849AA2;
+  --ink-mute: #5B7078;
+  --line: #1A2B33;
+  --line-2: #284049;
+  --coral-ink: #FF9E9A;
+  --coral-soft: #36201F;
+  --aqua-ink: #7FD6E6;
+  --aqua-soft: #0E2A32;
+  --good: #5BD69A;
+  --studio-top: #0E2931;
+  --studio-bot: #081217;
+  --studio-glow: rgba(79, 195, 217, .2);
+  --studio-floor: rgba(0, 0, 0, .45);
+  --studio-line: rgba(127, 214, 230, .09);
+  --vf: rgba(230, 241, 243, .3);
+  --glass: rgba(13, 26, 32, .72);
+  --glass-line: rgba(255, 255, 255, .09);
+  --glass-shadow: 0 18px 40px -20px rgba(0, 0, 0, .7);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, .4), 0 12px 32px -18px rgba(0, 0, 0, .7);
+  --shadow-2: 0 50px 90px -50px rgba(0, 0, 0, .85);
+  --header-bg: rgba(9, 19, 24, .66);
+  --header-line: rgba(255, 255, 255, .07);
+  --ph: rgba(247, 127, 127, .24);
+  --band: #0C1B21;
+  --band-2: #11252D;
+  --band-3: #163139;
+  --scene-mode: dark;
+}
+@media (max-width: 899px) {
+  :root { --header-space: 80px; --radius: 24px; }
+}

@@ -1,0 +1,70 @@
+/* Global base: reset, type, shared primitives (.wrap, .ph, .readout, .spec, .sr-only,
+   .section, word rise-in and reveals). Component styles live in CSS Modules. */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+}
+.over-buddy body, html.over-buddy { cursor: pointer; }
+a { color: inherit; }
+img, svg { max-width: 100%; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2.5px solid var(--aqua); outline-offset: 3px; border-radius: var(--r-sm); }
+::selection { background: color-mix(in srgb, var(--aqua) 35%, transparent); }
+[hidden] { display: none !important; }
+.skip { position: fixed; left: 12px; top: -60px; z-index: 100; padding: 10px 16px; border-radius: var(--r-pill); background: var(--ink); color: var(--bg); font-weight: 600; text-decoration: none; transition: top .2s; }
+.skip:focus { top: calc(env(safe-area-inset-top, 0px) + 12px); }
+.wrap { width: 100%; max-width: calc(var(--maxw) + var(--gutter) * 2); margin-inline: auto; padding-inline: var(--gutter); }
+svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.ph { background: var(--ph); border-radius: var(--r-xs); padding: 0 .12em; box-decoration-break: clone; -webkit-box-decoration-break: clone; text-decoration: underline dotted var(--coral); text-decoration-thickness: 1.5px; text-underline-offset: .18em; }
+/* placeholder text leans toward ink so it stays readable on the tint (at least 4.5:1), whatever colour its context sets */
+.ph[title] { color: color-mix(in srgb, currentColor 60%, var(--ink)); }
+.ph.soft { background: none; padding: 0; text-decoration-thickness: 2px; text-underline-offset: .1em; }
+
+h1, h2, h3 { font-family: var(--display); font-optical-sizing: auto; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(46px, 6.5vw, 104px); line-height: .95; font-weight: 560; letter-spacing: -0.045em; }
+h2 { font-size: clamp(36px, 4.4vw, 66px); line-height: 1; font-weight: 540; letter-spacing: -0.04em; }
+h3 { font-size: 21px; line-height: 1.2; font-weight: 600; letter-spacing: -0.02em; }
+p { text-wrap: pretty; }
+.lede { font-size: clamp(17px, 1.3vw, 19.5px); line-height: 1.55; color: var(--ink-2); margin: 0; max-width: 34rem; }
+.readout { font: 500 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.section { position: relative; padding-block: clamp(88px, 11vw, 168px); }
+.section-head { display: grid; gap: 20px; max-width: 50rem; margin-bottom: clamp(40px, 5.5vw, 72px); }
+.section-head > p { margin: 0; color: var(--ink-2); font-size: 18px; max-width: 40rem; }
+
+/* spec list: DM Mono label, value, hairlines (story steps, security data sheet) */
+.spec { margin: 0; display: grid; border-top: 1px solid var(--line); }
+.spec > div { display: grid; grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr); gap: 4px 16px; align-items: baseline; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.spec dt { font: 500 11px/1.35 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.spec dd { margin: 0; font-size: 15.5px; line-height: 1.45; color: var(--ink); }
+
+/* avatar initials */
+.av { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; flex: none; background: var(--aqua-soft); color: var(--aqua-ink); font: 700 12px/1 var(--body); }
+.av.coral { background: var(--coral-soft); color: var(--coral-ink); }
+
+/* word rise-in, from a visible resting state */
+.w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .14em; margin-bottom: -.14em; }
+.wi { display: inline-block; }
+.js [data-split].play .wi { animation: wordUp .95s var(--ease) both; animation-delay: calc(var(--i) * 38ms); }
+@keyframes wordUp { from { transform: translateY(108%); } to { transform: none; } }
+.js [data-reveal].play { animation: rise .95s var(--ease) both; animation-delay: var(--d, 0s); }
+@keyframes rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+@keyframes blink { 50% { opacity: .25; } }
+
+@media (max-width: 899px) {
+  body { font-size: 16px; }
+  .spec dd { font-size: 14.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
