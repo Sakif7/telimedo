@@ -82,6 +82,52 @@
 .roles b { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .role { padding: 5px 9px; border-radius: var(--r-pill); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font: 500 11px/1 var(--mono); letter-spacing: .04em; color: var(--ink-2); }
 
+/* reminders: typing dots sit where the message will appear */
+.typing { position: absolute; left: 14px; top: 35px; display: none; gap: 4px; padding: 11px 13px; border-radius: var(--r-sm) var(--r-sm) var(--r-sm) var(--r-xs); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); }
+
+/* ------------------------------------------------------------ reveal, then one demo per card
+   A card unmasks upward from its bottom edge as it scrolls in; then its vignette shows what it
+   does, once. At rest (on screen at load, no JS, reduced motion) everything is in its final state. */
+:global(.js) .bento .tile:global(.play) { animation: tileIn 1s var(--ease) both; animation-delay: var(--d, 0s); }
+/* booking: the slots fill in day by day, then one gets picked (ProductVignettes) */
+.tile:global(.play) .slots button { animation: fadeUp .45s var(--ease) both; animation-delay: calc(.45s + var(--k) * 45ms); }
+/* waiting room: patients arrive one by one */
+.tile:global(.play) .waitRow { animation: slideIn .6s var(--ease) both; animation-delay: calc(.5s + var(--k) * .24s); }
+/* analytics: the chart draws left to right while the figure counts up (data-count), then the end point lands */
+.tile:global(.play) .chart svg { animation: wipe 1.5s cubic-bezier(.45, 0, .2, 1) .45s both; }
+.tile:global(.play) .sparkEnd { animation: pop .5s var(--ease) 1.85s both; }
+.tile:global(.play) .sparkK em { animation: fadeUp .5s var(--ease) 1.7s both; }
+/* e-prescription: each check lands and ticks, then it is sent */
+.tile:global(.play) .rxRow { animation: fadeUp .5s var(--ease) both; animation-delay: calc(.5s + var(--k) * .3s); }
+.tile:global(.play) .rxRow .good svg:global(.i) { animation: wipe .45s var(--ease) 1.1s both; }
+.tile:global(.play) .rxStatus { animation: fadeUp .5s var(--ease) 1.45s both; }
+.tile:global(.play) .rxStatus i { animation: pop .5s var(--ease) 1.55s both; }
+/* reminders: the phone shows typing, then the message and its link arrive */
+.tile:global(.play) .typing { display: inline-flex; animation: typing 1.25s linear .45s both; }
+.tile:global(.play) .typing i { animation: dot .9s ease-in-out .45s 2 both; }
+.tile:global(.play) .typing i:nth-child(2) { animation-delay: .6s; }
+.tile:global(.play) .typing i:nth-child(3) { animation-delay: .75s; }
+.tile:global(.play) .msg { animation: pop .5s var(--ease) 1.7s both; transform-origin: 0 100%; }
+.tile:global(.play) .link { animation: pop .5s var(--ease) 2.05s both; transform-origin: 0 100%; }
+/* records: entries appear in order and the line joins them */
+.tile:global(.play) .timeline p { animation: fadeUp .5s var(--ease) both; animation-delay: calc(.5s + var(--k) * .32s); }
+.tile:global(.play) .timeline p:not(:last-child) i::after { transform-origin: 50% 0; animation: grow .4s var(--ease) both; animation-delay: calc(.8s + var(--k) * .32s); }
+/* payments: the lines come in, insurance is verified, the total counts up (data-count) */
+.tile:global(.play) .receipt p { animation: fadeUp .5s var(--ease) both; animation-delay: calc(.5s + var(--k) * .28s); }
+.tile:global(.play) .receipt .good svg:global(.i) { animation: wipe .45s var(--ease) 1.15s both; }
+/* team: people join, then their roles */
+.tile:global(.play) .roles :global(.av) { animation: pop .55s var(--ease) both; animation-delay: calc(.45s + var(--k) * .18s); }
+.tile:global(.play) .roles .role { animation: fadeUp .5s var(--ease) both; animation-delay: calc(.75s + var(--k) * .18s); }
+@keyframes tileIn { from { opacity: 0; transform: translateY(40px); clip-path: inset(35% 0 0 0 round var(--r-md)); } to { opacity: 1; transform: none; clip-path: inset(0 round var(--r-md)); } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes slideIn { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes pop { from { opacity: 0; transform: scale(.6); } 70% { opacity: 1; transform: scale(1.06); } to { opacity: 1; transform: none; } }
+@keyframes wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+@keyframes grow { from { transform: scaleY(0); } to { transform: none; } }
+@keyframes typing { 0%, 85% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes dot { 0%, 60%, 100% { opacity: .4; transform: none; } 30% { opacity: 1; transform: translateY(-3px); } }
+
 @media (max-width: 1180px) {
   .bento { grid-auto-flow: row dense; }
   .tBook, .tStats { grid-column: span 12; }

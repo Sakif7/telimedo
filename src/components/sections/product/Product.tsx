@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { site } from '@/content/site';
 import { SPARK_SVG_INNER } from '@/lib/call-art';
 import { Icon } from '@/components/ui/Icon';
@@ -11,10 +11,22 @@ const copy = site.product;
 // The chart stretches to its tile; the end marker is drawn in HTML so it stays round.
 const SPARK_LINE = SPARK_SVG_INNER.replace(/<circle[^>]*class="end"[^>]*\/>/, '');
 
-/** A feature: title, one sentence, and a small real piece of the product. */
-function Tile({ cls, delay, title, body, moment, children }: { cls: string; delay?: string; title: string; body: string; moment?: string; children: ReactNode }) {
+/** Stagger index for the one-time demo that plays after a card reveals. */
+const k = (i: number) => ({ '--k': i }) as CSSProperties;
+
+/** A feature: title, one sentence, and a small real piece of the product. When the card
+    scrolls in it unmasks, then its vignette plays a short demo once (Product.module.css).
+    `count` marks cards with figures that count up. */
+function Tile({ cls, delay, title, body, moment, count, children }: { cls: string; delay?: string; title: string; body: string; moment?: string; count?: boolean; children: ReactNode }) {
   return (
-    <Card as="article" className={`${s.tile} ${cls}`} data-reveal="" data-moment={moment} style={delay ? ({ '--d': delay } as React.CSSProperties) : undefined}>
+    <Card
+      as="article"
+      className={`${s.tile} ${cls}`}
+      data-reveal=""
+      data-count-group={count ? '' : undefined}
+      data-moment={moment}
+      style={delay ? ({ '--d': delay } as CSSProperties) : undefined}
+    >
       <div className={s.tileCopy}>
         <h3>{title}</h3>
         <p>{body}</p>
@@ -42,11 +54,13 @@ export function Product() {
           <WaitingRoomVignette />
         </Tile>
 
-        <Tile cls={s.tStats} title={analytics.title} body={analytics.body}>
+        <Tile cls={s.tStats} title={analytics.title} body={analytics.body} count>
           <div className={`${s.vig} ${s.spark}`}>
             <p className={s.sparkK}>
               <span>{analytics.label}</span>
-              <b>{analytics.value}</b>
+              <b data-count="" data-count-delay="450">
+                {analytics.value}
+              </b>
               <em>
                 <Icon name="arrowUp" />
                 {analytics.delta}
@@ -68,8 +82,8 @@ export function Product() {
                 <small>{rx.dose}</small>
               </span>
             </p>
-            {rx.rows.map((r) => (
-              <p key={r.label} className={s.rxRow}>
+            {rx.rows.map((r, i) => (
+              <p key={r.label} className={s.rxRow} style={k(i)}>
                 <span>{r.label}</span>
                 <b className={r.good ? s.good : undefined}>
                   {r.good ? <Icon name="check" /> : null}
@@ -87,7 +101,12 @@ export function Product() {
         <Tile cls={s.tRemind} title={reminders.title} body={reminders.body}>
           <div className={s.vig}>
             <p className={s.smsMeta}>{reminders.meta}</p>
-            <p className={s.bubble}>{reminders.text}</p>
+            <p className={s.typing} aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </p>
+            <p className={`${s.bubble} ${s.msg}`}>{reminders.text}</p>
             <p className={`${s.bubble} ${s.link}`}>
               <Icon name="link" />
               {reminders.link}
@@ -97,8 +116,8 @@ export function Product() {
 
         <Tile cls={s.tRecords} delay=".06s" title={records.title} body={records.body}>
           <div className={`${s.vig} ${s.timeline}`}>
-            {records.items.map((it) => (
-              <p key={it.title}>
+            {records.items.map((it, i) => (
+              <p key={it.title} style={k(i)}>
                 <i />
                 <span>
                   <b>{it.title}</b>
@@ -109,12 +128,12 @@ export function Product() {
           </div>
         </Tile>
 
-        <Tile cls={s.tPay} delay=".12s" title={payments.title} body={payments.body}>
+        <Tile cls={s.tPay} delay=".12s" title={payments.title} body={payments.body} count>
           <div className={`${s.vig} ${s.receipt}`}>
-            {payments.rows.map((r) => (
-              <p key={r.label} className={r.total ? s.total : undefined}>
+            {payments.rows.map((r, i) => (
+              <p key={r.label} className={r.total ? s.total : undefined} style={k(i)}>
                 <span>{r.label}</span>
-                <b className={r.good ? s.good : undefined}>
+                <b className={r.good ? s.good : undefined} data-count={r.total ? '' : undefined} data-count-delay={r.total ? '1050' : undefined}>
                   {r.good ? <Icon name="check" /> : null}
                   {r.value}
                 </b>
@@ -125,8 +144,8 @@ export function Product() {
 
         <Tile cls={s.tTeam} title={team.title} body={team.body}>
           <div className={`${s.vig} ${s.roles}`}>
-            {team.people.map((p) => (
-              <p key={p.name}>
+            {team.people.map((p, i) => (
+              <p key={p.name} style={k(i)}>
                 <span className={p.coral ? 'av coral' : 'av'}>{p.initials}</span>
                 <b>{p.name}</b>
                 <span className={s.role}>{p.role}</span>
