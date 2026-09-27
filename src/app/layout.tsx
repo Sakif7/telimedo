@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, DM_Mono, Figtree } from 'next/font/google';
 import { site } from '@/content/site';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
+import { PageTransitions } from '@/components/layout/PageTransitions';
 import { brand } from '@/lib/brand';
 import { siteUrl } from '@/lib/site-url';
 import '@/styles/tokens.css';
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <Header wordmark={brand.wordmark} />
         {children}
         <Footer wordmarkMono={brand.wordmarkMono} year={new Date().getFullYear()} />
+        <PageTransitions />
       </body>
     </html>
   );

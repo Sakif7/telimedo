@@ -68,3 +68,25 @@ p { text-wrap: pretty; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
 }
+
+/* Page transitions: the screen closes and opens like the buddy's camera iris
+   (components/layout/PageTransitions.tsx starts them). The aperture has eight
+   blades that turn as it closes; behind it is the dark studio band. */
+:root[data-transition="iris"]::view-transition { background: var(--band); }
+:root[data-transition="iris"]::view-transition-group(root) { animation: none; }
+:root[data-transition="iris"]::view-transition-old(root) { mix-blend-mode: normal; animation: iris-close .42s cubic-bezier(.55, 0, .75, .2) both; }
+:root[data-transition="iris"]::view-transition-new(root) { mix-blend-mode: normal; animation: iris-open .62s var(--ease) .46s both; }
+@keyframes iris-close {
+  0% { clip-path: polygon(calc(50% + 90.00vmax) calc(50% + 0.00vmax), calc(50% + 63.64vmax) calc(50% + 63.64vmax), calc(50% + 0.00vmax) calc(50% + 90.00vmax), calc(50% + -63.64vmax) calc(50% + 63.64vmax), calc(50% + -90.00vmax) calc(50% + 0.00vmax), calc(50% + -63.64vmax) calc(50% + -63.64vmax), calc(50% + -0.00vmax) calc(50% + -90.00vmax), calc(50% + 63.64vmax) calc(50% + -63.64vmax)); }
+  25% { clip-path: polygon(calc(50% + 65.90vmax) calc(50% + 14.61vmax), calc(50% + 36.27vmax) calc(50% + 56.93vmax), calc(50% + -14.61vmax) calc(50% + 65.90vmax), calc(50% + -56.93vmax) calc(50% + 36.27vmax), calc(50% + -65.90vmax) calc(50% + -14.61vmax), calc(50% + -36.27vmax) calc(50% + -56.93vmax), calc(50% + 14.61vmax) calc(50% + -65.90vmax), calc(50% + 56.93vmax) calc(50% + -36.27vmax)); }
+  50% { clip-path: polygon(calc(50% + 40.78vmax) calc(50% + 19.02vmax), calc(50% + 15.39vmax) calc(50% + 42.29vmax), calc(50% + -19.02vmax) calc(50% + 40.78vmax), calc(50% + -42.29vmax) calc(50% + 15.39vmax), calc(50% + -40.78vmax) calc(50% + -19.02vmax), calc(50% + -15.39vmax) calc(50% + -42.29vmax), calc(50% + 19.02vmax) calc(50% + -40.78vmax), calc(50% + 42.29vmax) calc(50% + -15.39vmax)); }
+  75% { clip-path: polygon(calc(50% + 17.85vmax) calc(50% + 13.70vmax), calc(50% + 2.94vmax) calc(50% + 22.31vmax), calc(50% + -13.70vmax) calc(50% + 17.85vmax), calc(50% + -22.31vmax) calc(50% + 2.94vmax), calc(50% + -17.85vmax) calc(50% + -13.70vmax), calc(50% + -2.94vmax) calc(50% + -22.31vmax), calc(50% + 13.70vmax) calc(50% + -17.85vmax), calc(50% + 22.31vmax) calc(50% + -2.94vmax)); }
+  100% { clip-path: polygon(calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax)); }
+}
+@keyframes iris-open {
+  0% { clip-path: polygon(calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax), calc(50% + 0.00vmax) calc(50% + 0.00vmax)); }
+  25% { clip-path: polygon(calc(50% + 17.85vmax) calc(50% + -13.70vmax), calc(50% + 22.31vmax) calc(50% + 2.94vmax), calc(50% + 13.70vmax) calc(50% + 17.85vmax), calc(50% + -2.94vmax) calc(50% + 22.31vmax), calc(50% + -17.85vmax) calc(50% + 13.70vmax), calc(50% + -22.31vmax) calc(50% + -2.94vmax), calc(50% + -13.70vmax) calc(50% + -17.85vmax), calc(50% + 2.94vmax) calc(50% + -22.31vmax)); }
+  50% { clip-path: polygon(calc(50% + 40.78vmax) calc(50% + -19.02vmax), calc(50% + 42.29vmax) calc(50% + 15.39vmax), calc(50% + 19.02vmax) calc(50% + 40.78vmax), calc(50% + -15.39vmax) calc(50% + 42.29vmax), calc(50% + -40.78vmax) calc(50% + 19.02vmax), calc(50% + -42.29vmax) calc(50% + -15.39vmax), calc(50% + -19.02vmax) calc(50% + -40.78vmax), calc(50% + 15.39vmax) calc(50% + -42.29vmax)); }
+  75% { clip-path: polygon(calc(50% + 65.90vmax) calc(50% + -14.61vmax), calc(50% + 56.93vmax) calc(50% + 36.27vmax), calc(50% + 14.61vmax) calc(50% + 65.90vmax), calc(50% + -36.27vmax) calc(50% + 56.93vmax), calc(50% + -65.90vmax) calc(50% + 14.61vmax), calc(50% + -56.93vmax) calc(50% + -36.27vmax), calc(50% + -14.61vmax) calc(50% + -65.90vmax), calc(50% + 36.27vmax) calc(50% + -56.93vmax)); }
+  100% { clip-path: polygon(calc(50% + 90.00vmax) calc(50% + 0.00vmax), calc(50% + 63.64vmax) calc(50% + 63.64vmax), calc(50% + 0.00vmax) calc(50% + 90.00vmax), calc(50% + -63.64vmax) calc(50% + 63.64vmax), calc(50% + -90.00vmax) calc(50% + 0.00vmax), calc(50% + -63.64vmax) calc(50% + -63.64vmax), calc(50% + -0.00vmax) calc(50% + -90.00vmax), calc(50% + 63.64vmax) calc(50% + -63.64vmax)); }
+}
