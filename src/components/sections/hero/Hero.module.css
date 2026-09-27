@@ -26,10 +26,6 @@
 .trustCount { font-weight: 500; }
 /* The buddy's box. A size container, so the poster can mirror the camera fit in CSS. */
 .stage { position: relative; align-self: stretch; min-height: 520px; container-type: size; }
-.foot { position: absolute; z-index: 2; left: 0; right: 0; bottom: 26px; display: flex; align-items: center; gap: 14px; max-width: calc(var(--maxw) + var(--gutter) * 2); margin-inline: auto; padding-inline: var(--gutter); }
-.scrollCue { position: relative; width: 22px; height: 34px; border-radius: var(--r-sm); box-shadow: inset 0 0 0 1.5px var(--ink-mute); }
-.scrollCue i { position: absolute; left: 50%; top: 7px; width: 3px; height: 7px; margin-left: -1.5px; border-radius: 2px; background: var(--ink-3); animation: cue 1.8s var(--ease) infinite; }
-@keyframes cue { 0% { transform: translateY(0); opacity: 1; } 70% { transform: translateY(11px); opacity: 0; } 100% { opacity: 0; } }
 
 @media (max-width: 899px) {
   .hero { padding-inline: 8px; }
@@ -39,8 +35,6 @@
   /* a definite height (same size as v1's min-height) so the poster's container units resolve */
   .stage { min-height: clamp(330px, 50svh, 520px); height: clamp(330px, 50svh, 520px); }
   .bg { --gx: 50%; --fx: 50%; }
-  .foot { justify-content: center; bottom: 18px; }
-  .foot :global(.readout) { display: none; }
 }
 @media (max-width: 560px) {
   .actions > a { flex: 1 1 auto; }

@@ -29,5 +29,3 @@ export function Poster({ ref, fit = false, intro = false, className }: { ref?: R
   const cls = [s.poster, fit ? s.fit : '', intro ? s.intro : '', className ?? ''].filter(Boolean).join(' ');
   return <div ref={ref} className={cls} aria-hidden="true" data-part="poster" />;
 }
-
-export const studioClasses = s;

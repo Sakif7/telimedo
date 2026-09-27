@@ -67,11 +67,12 @@ export const site = {
       { badge: 'GDPR', label: 'compliant' },
     ],
     trustCount: ['Trusted by ', ph('120+ clinics', 'Placeholder: replace with your real number')] as Rich,
-    chips: [
-      { lead: { kind: 'video' } as Lead, title: 'Dr. Rivera is ready', meta: 'Video visit · 10:30', ready: true, at: '0,0.12,0', off: '0.62,0', align: 'left' },
-      { lead: { kind: 'rx' } as Lead, title: 'Prescription sent', meta: 'Riverside Pharmacy · 10:42', ready: false, at: '0,0.8,0', off: '-0.5,0', align: 'right' },
-    ],
-    scrollCue: 'Scroll to follow a visit',
+    /** One line at a time in a speech bubble above the buddy's head; the engine anchors it to a 3D point (at, off). */
+    says: {
+      lines: ['Dr. Rivera is ready for you.', 'I sent your prescription to Riverside Pharmacy.', 'Your follow-up is booked for Tuesday at 10:30.'],
+      at: '-0.56,1.98,0',
+      off: '0,0',
+    },
   },
 
   logos: {

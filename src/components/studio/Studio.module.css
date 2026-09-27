@@ -32,16 +32,17 @@
 .rings i:nth-child(4)::after { animation-delay: 4.5s; }
 @keyframes sonar { 0% { opacity: 0; transform: scale(.94); } 20% { opacity: .55; } 100% { opacity: 0; transform: scale(1.04); } }
 
-/* Glass chips floating beside him, anchored to projected 3D points. */
-.chip { position: absolute; left: 0; top: 0; z-index: 3; display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 10px; border-radius: var(--r-sm); background: var(--glass); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3); box-shadow: inset 0 0 0 1px var(--glass-line), var(--glass-shadow); white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .6s ease; }
-:global(.gl-live) .chip { opacity: 1; }
-.chipT b { display: block; font-size: 14px; line-height: 1.25; font-weight: 650; }
-.chipT small { display: block; font: 500 11.5px/1.3 var(--mono); color: var(--ink-3); letter-spacing: .02em; }
-.ready { display: inline-block; width: 7px; height: 7px; margin-left: 4px; border-radius: 50%; background: var(--good); vertical-align: 2px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--good) 22%, transparent); animation: blink 1.6s steps(2, jump-none) infinite; }
-@keyframes blink { 50% { opacity: .25; } }
-:global(.no-3d) .chip { display: none; }
+/* The buddy's speech bubble (hero): glass, a tail toward his head, anchored to a projected
+   3D point by the engine. It appears once he is in place (.buddy-in); lines type in. */
+.says { position: absolute; left: 0; top: 0; z-index: 3; max-width: 250px; padding: 12px 16px; border-radius: var(--r-md); background: var(--glass); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3); box-shadow: inset 0 0 0 1px var(--glass-line), var(--glass-shadow); font: 600 15px/1.35 var(--body); letter-spacing: -.005em; color: var(--ink); pointer-events: none; opacity: 0; scale: .92; transform-origin: 85% 100%; transition: opacity .45s ease, scale .6s var(--ease); }
+.says::after { content: ""; position: absolute; right: 22px; bottom: -9px; width: 16px; height: 10px; background: var(--glass); clip-path: polygon(0 0, 100% 0, 78% 100%); }
+:global(.buddy-in) .says { opacity: 1; scale: 1; }
+.saysFull { display: block; visibility: hidden; }
+.saysTyped { position: absolute; inset: 12px 16px; }
+:global(.no-3d) .says { display: none; }
+/* on phones the studio is too narrow to talk beside his head without covering him */
 @media (max-width: 899px) {
-  .chip { display: none; }
+  .says { display: none; }
 }
 
 /* the "Say hi" label that follows the cursor over the buddy */

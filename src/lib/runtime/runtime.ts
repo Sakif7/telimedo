@@ -76,6 +76,7 @@ export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): R
         at: (el.dataset.at || '0,0,0').split(',').map(Number),
         off: (el.dataset.off || '0,0').split(',').map(Number),
         align: el.dataset.align || 'left',
+        valign: el.dataset.valign || 'center',
       }));
       const engine = new BuddyEngine();
       cleanups.push(() => engine.dispose());

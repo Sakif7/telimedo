@@ -20,7 +20,8 @@ import { applyTheme, isDarkScene } from './theme';
    edge before rising into place (the intro). */
 
 export type Mode = 'hero' | 'story' | 'cta';
-export type Chip = { el: HTMLElement; at: number[]; off: number[]; align: string; hidden?: boolean };
+/** An element anchored to a 3D point: `align` which side sits on the point (left/right), `valign` whether it is centred on it or sits above it (bottom). */
+export type Chip = { el: HTMLElement; at: number[]; off: number[]; align: string; valign?: string; hidden?: boolean };
 
 export type EngineOptions = {
   story: Story;
@@ -682,7 +683,7 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, intr
       let x = ((vA.x + 1) / 2) * W, y = ((1 - vA.y) / 2) * H;
       const w = c.el.offsetWidth, h = c.el.offsetHeight;
       if (c.align === 'right') x -= w;
-      y -= h / 2;
+      y -= c.valign === 'bottom' ? h : h / 2;
       x = clamp(x, 12, W - w - 12);
       y = clamp(y, 12, H - h - 12);
       let hide = false;
