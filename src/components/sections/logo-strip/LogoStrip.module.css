@@ -1,0 +1,16 @@
+.logos { padding-block: 34px 18px; }
+.inner { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 36px; }
+.label { margin: 0; max-width: 12rem; font-size: 14px; line-height: 1.35; color: var(--ink-3); font-weight: 500; }
+.marquee { display: flex; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+.track { display: flex; align-items: center; gap: 56px; margin: 0; padding: 0 56px 0 0; list-style: none; flex: none; animation: marquee 42s linear infinite; }
+.marquee:hover .track { animation-play-state: paused; }
+@keyframes marquee { to { transform: translateX(-100%); } }
+/* neutral placeholders: one plain style for every name */
+.name { color: var(--ink-3); font: 600 16px/1 var(--body); letter-spacing: -.01em; white-space: nowrap; }
+@media (max-width: 899px) {
+  .inner { grid-template-columns: 1fr; gap: 16px; }
+  .label { max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .track { animation: none !important; }
+}
