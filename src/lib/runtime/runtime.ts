@@ -102,6 +102,7 @@ export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): R
         assets: ASSETS,
         markSvg: brand.mark,
         heroShot: reg.hero?.shot,
+        heroAct: reg.hero?.act,
         intro: () => !motion.reduce && !window.__buddyCalm && !docEl.classList.contains('poster-late'),
         introGate: () => docEl.classList.contains('doors-open'),
         onProgress: (f) => setLoad(0.3 + 0.55 * f),

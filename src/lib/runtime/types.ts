@@ -1,3 +1,4 @@
+import type { ClipName } from '@/lib/buddy/clips';
 import type { ShotName } from '@/lib/buddy/shots';
 import type { StoryRefs } from '@/lib/story/controller';
 
@@ -15,6 +16,8 @@ export type StudioRefs = {
   chips?: HTMLElement[];
   /** Hero only: the buddy's shot in this studio (the home hero uses 'hero'; other pages pick a pose). */
   shot?: ShotName;
+  /** Other pages: the clip he loops in this studio once he is in place. */
+  act?: ClipName;
 };
 
 export type ManifestoRefs = { text: HTMLElement; words: HTMLElement[] };

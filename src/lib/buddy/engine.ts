@@ -3,7 +3,9 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { clamp, easeInOut, easeOutBack, easeOutCubic, lerp, lerpRect, motion, smooth, type Rect } from '@/lib/motion';
+import { BUDDY_TALK_EVENT } from '@/lib/runtime/signals';
 import type { Story } from '@/lib/story/controller';
+import { createClipPlayer, type ClipName, type ClipPlayer } from './clips';
 import { conformRing, decalMaterial, glowMaterial, radialTexture } from './glow';
 import { buildPedestal } from './pedestal';
 import { applyPose, heartbeat, readRig, rotateWorld, type Rig } from './poses';
@@ -18,7 +20,10 @@ import { applyTheme, isDarkScene } from './theme';
    single rAF loop calls frame(). dispose() releases everything.
    The first studio ("hero": the home hero, or the studio on other pages) can use
    another shot, and the first time it is shown the buddy peeks in from its bottom
-   edge before rising into place (the intro). Pages without the story pass none. */
+   edge before rising into place (the intro). Pages without the story pass none.
+   The model's clips (clips.ts) play over the poses when motion is allowed: the
+   intro's pop-up, waves, talking, idle moments and one clip per story moment.
+   With reduced motion, and in calm mode (tests), he holds the still poses. */
 
 export type Mode = 'hero' | 'story' | 'cta';
 /** An element anchored to a 3D point: `align` which side sits on the point (left/right), `valign` whether it is centred on it or sits above it (bottom). */
@@ -34,6 +39,8 @@ export type EngineOptions = {
   markSvg: string;
   /** The first studio's shot: 'hero' on the home page, another pose on other pages. */
   heroShot?: ShotName;
+  /** Other pages: the clip the first studio loops once he is in place. */
+  heroAct?: ClipName;
   /** Asked when the first studio is first shown: play the intro? (not with reduced motion or a late start) */
   intro?: () => boolean;
   /** The buddy is in place: after the intro, or straight away without one. */
@@ -64,7 +71,7 @@ function webgl2Available() {
 /** Pointer targets that belong to the page, not to the buddy. */
 const INTERACTIVE = 'a, button, input, textarea, select, label, form, [data-interactive]';
 
-export function createBuddy({ story, slots, stages, chips, assets, markSvg, heroShot = 'hero', intro, onIntroDone, introGate, onProgress, onReady, onFail, onFirstFrame }: EngineOptions) {
+export function createBuddy({ story, slots, stages, chips, assets, markSvg, heroShot = 'hero', heroAct, intro, onIntroDone, introGate, onProgress, onReady, onFail, onFirstFrame }: EngineOptions) {
   if (!webgl2Available()) {
     onFail();
     return null;
@@ -137,7 +144,9 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
   loadTex('desk', assets.desk);
   loadTex('compact', assets.compact);
 
-  let model!: THREE.Object3D, headMesh!: THREE.Object3D, socketL!: THREE.Object3D, rig!: Rig;
+  let model!: THREE.Object3D, headMesh!: THREE.Object3D, socketL!: THREE.Object3D, rig!: Rig, player: ClipPlayer | null = null;
+  /** How much lower his head is in the intro's crouch than standing (drop units). */
+  let crouch = 0;
   const hands: Record<string, THREE.Object3D> = {}, exprs: Record<string, THREE.Object3D> = {};
   const propState: Record<string, { obj: THREE.Object3D; p: number; target: number }> = {};
   let earMat: THREE.MeshStandardMaterial | null = null, earGlowMat!: THREE.MeshBasicMaterial, lensGlowMat: THREE.MeshBasicMaterial | undefined;
@@ -173,7 +182,8 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
     rig = readRig(gltf, model);
     for (const k of Object.keys(SHOTS) as (keyof typeof SHOTS)[]) if (!rig.poses[SHOTS[k].pose]) SHOTS[k].pose = 'Rest';
 
-    for (const n of ['Hand_Grip_L', 'Hand_Open_L', 'Hand_Relaxed_L', 'Hand_Grip_R', 'Hand_Open_R', 'Hand_Relaxed_R']) {
+    // every variant is listed: three.js shows a mesh unless told otherwise, whatever Blender hid
+    for (const n of ['Hand_Grip_L', 'Hand_Open_L', 'Hand_Relaxed_L', 'Hand_Grip_R', 'Hand_Open_R', 'Hand_Relaxed_R', 'Hand_Point_R']) {
       const o = model.getObjectByName(n);
       if (o) hands[n] = o;
     }
@@ -181,12 +191,21 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
     if (oldTablet) oldTablet.visible = false;
     const heart = model.getObjectByName('Prop_Heart');
     if (heart) propState.Prop_Heart = { obj: heart, p: 0, target: 0 };
-    for (const n of ['Happy', 'Wink', 'Caring']) {
+    for (const n of ['Happy', 'Wink', 'Caring', 'Surprised', 'Thinking', 'Joy', 'Love']) {
       const o = model.getObjectByName('Expr_' + n);
       if (o) exprs[n] = o;
     }
     headMesh = model.getObjectByName('Head_Mesh') || rig.bones.Head;
     socketL = model.getObjectByName('Socket_Hand_L') || rig.bones.Hand_L;
+    player = createClipPlayer(gltf, rig, model.getObjectByName('Rig') || model);
+    if (player?.has('Anim_Intro_Pop')) {
+      applyPose(rig, 'Hello', 'Hello', 0);
+      model.updateMatrixWorld(true);
+      const stand = rig.bones.Head.getWorldPosition(vA).y;
+      player.pose('Anim_Intro_Pop', 0);
+      model.updateMatrixWorld(true);
+      crouch = (stand - rig.bones.Head.getWorldPosition(vA).y) / BODY.h;
+    }
 
     const glowMats = new Set<THREE.MeshStandardMaterial>();
     model.traverse((obj) => {
@@ -331,21 +350,60 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
   };
   window.addEventListener('pointerdown', onPointerDown);
 
-  let time = 0, introDone = false;
-  /* intro: hidden below the studio's bottom edge, the head peeks up and looks around, then he rises (seconds) */
-  const INTRO = { peek: 0.6, look: 1.1, rise: 0.8 };
-  const INTRO_LEN = INTRO.peek + INTRO.look + INTRO.rise;
-  let introStart = -1, introWaiting = false, introBlinked = false;
-  let waveStart = -10, waveEnd = -10, nextAutoWave = 1e9, winkUntil = -1, hopStart = -10, currentWaveW = 0;
-  function triggerWave(dur: number) {
-    waveStart = time;
-    waveEnd = time + dur;
+  let time = 0, introDone = false, introSignalled = false;
+  /* intro: hidden below the studio's bottom edge, the head peeks up and looks around, then he rises
+     (seconds). With the clips he waits crouched on the pop-up's first frame and springs up as the view
+     rises to him (pop: how long the view takes). */
+  const INTRO = { peek: 0.6, look: 1.1, rise: 0.8, pop: 0.45 };
+  let introStart = -1, introWaiting = false, introBlinked = false, introPop = false;
+  let winkUntil = -1, hopStart = -10;
+  /* clips: he greets once with the big wave, then rests, and every few seconds does something */
+  let greeted = false, greetAt = 1e9, nextIdle = 1e9, idleTurn = 0, clickTurn = 0, talkTurn = 0, ctaOffered = false;
+  const IDLE: ClipName[] = ['Anim_Wave_Small', 'Anim_Idle_LookAround', 'Anim_Wave_Small', 'Anim_Idle_CheckTablet'];
+  const live = () => !!player && !motion.reduce && !window.__buddyCalm;
+  /** The pose he rests in between clips: the home hero holds the tablet once he has greeted. */
+  const restPose = (s: Shot) => (mode === 'hero' && heroShot === 'hero' && greeted && live() ? 'HoldTablet' : s.pose);
+  /** A short crossfade when a clip starts from the pose he rests in, a longer one when he has to move there. */
+  const fadeFor = (name: ClipName) => (player!.base(name) === restPose(HERO) ? 0.15 : 0.45);
+  /** The home hero's clips play slower than authored (they read as hurried there), apart from the waves. */
+  const speedFor = (name: ClipName) => (heroShot === 'hero' && mode === 'hero' && name !== 'Anim_Wave_Hello' && name !== 'Anim_Wave_Small' ? 0.7 : 1);
+  /** How long a clip takes at the speed it plays. */
+  const lengthOf = (name: ClipName) => player!.duration(name) / speedFor(name);
+  function signalIn() {
+    if (introSignalled) return;
+    introSignalled = true;
+    onIntroDone?.();
+  }
+  /** The big wave once he is in place (not on the 404, where his hand holds no tablet). */
+  function greet() {
+    greeted = true;
+    greetAt = 1e9;
+    nextIdle = time + 7 + Math.random() * 3;
+    if (!HERO.tablet || !player?.has('Anim_Wave_Hello')) return;
+    player.play('Anim_Wave_Hello', { fadeIn: 0.15, fadeOut: fadeFor('Anim_Wave_Hello') });
+    nextIdle += player.duration('Anim_Wave_Hello');
   }
   function sayHi() {
+    // where he holds the tablet: the big wave or a happy hop, in turn
+    if (live() && mode === 'hero' && HERO.tablet && greeted) {
+      const name: ClipName = clickTurn++ % 2 ? 'Anim_Hop_Happy' : 'Anim_Wave_Hello';
+      player!.play(name, { fadeIn: fadeFor(name), fadeOut: fadeFor(name), speed: speedFor(name) });
+      nextIdle = time + lengthOf(name) + 6;
+      return;
+    }
     winkUntil = time + 1.2;
-    if (currentWaveW > 0.5) triggerWave(1.9);
-    else hopStart = time;
+    if (!motion.reduce) hopStart = time;
   }
+  /* he talks with his hands while the speech bubble types, on two lines out of three */
+  const onTalk = () => {
+    if (!live() || mode !== 'hero' || heroAct || !greeted || player!.busy()) return;
+    const n = talkTurn++;
+    if (n % 3 === 2) return;
+    const name: ClipName = n % 2 ? 'Anim_Talk_B' : 'Anim_Talk_A';
+    player!.play(name, { fadeIn: fadeFor(name), fadeOut: fadeFor(name), speed: speedFor(name) });
+    nextIdle = Math.max(nextIdle, time + lengthOf(name) + 2.5);
+  };
+  window.addEventListener(BUDDY_TALK_EVENT, onTalk);
 
   /* ================================================================ modes: the canvas lives in whichever studio is on screen */
   const rects: { hero: Rect | null; cta: Rect | null; avoidHero: Rect | null } = { hero: null, cta: null, avoidHero: null };
@@ -383,17 +441,29 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
     // entering a studio: start from its own resting state
     for (const n in propState) propState[n].p = 0;
     tablet.presence = m === 'hero' && HERO.tablet ? 1 : 0;
+    player?.reset();
+    ctaOffered = false;
     if (!introDone) {
       // the intro only plays when the first studio is the first thing he appears in
       introDone = true;
       if (m === 'hero' && intro?.()) {
         introWaiting = true;
-        nextAutoWave = 1e9;
+        introPop = live() && !!HERO.tablet && !!player?.play('Anim_Intro_Pop', { fadeIn: 0, hold: true, paused: true, speed: speedFor('Anim_Intro_Pop') });
       } else {
-        nextAutoWave = time + 1.1;
-        onIntroDone?.();
+        greetAt = time + 1.1;
+        signalIn();
       }
-    } else if (nextAutoWave > 1e8) nextAutoWave = time + 1.5;
+    } else {
+      // left during the intro: he is simply in place when he comes back
+      if (introWaiting || introStart >= 0) {
+        introWaiting = false;
+        introStart = -1;
+        greeted = true;
+        signalIn();
+      }
+      if (!greeted && greetAt > 1e8) greetAt = time + 0.8;
+      nextIdle = Math.min(nextIdle, time + 4);
+    }
   }
   // Where the hero poster sits (mirrors the camera fit).
   function posterPlacement() {
@@ -437,6 +507,45 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
   }
   const updatePortal = (p: number) => portal?.update(p, { camera, lensWorld, headMesh, W, H, time: window.__buddyCalm ? 0 : time });
 
+  /** Home hero: greet, then rest holding the tablet and now and then wave, look around or check it.
+      Other pages: greet, then loop the page's clip, glancing up from the tablet now and then. */
+  function heroClips() {
+    if (introWaiting || introStart >= 0) return;
+    if (!greeted) {
+      if (time > greetAt) greet();
+      return;
+    }
+    const p = player!;
+    if (heroAct) {
+      if (!p.current()) p.play(heroAct, { fadeIn: 0.4, fadeOut: 0.4 });
+      if (heroAct === 'Anim_Tablet_Tap' && p.current() === heroAct && !p.extraOn() && time > nextIdle) {
+        p.add('Anim_Idle_LookAround');
+        nextIdle = time + 12 + Math.random() * 5;
+      }
+      return;
+    }
+    if (p.busy() || time < nextIdle) return;
+    const name = IDLE[idleTurn++ % IDLE.length];
+    if (name === 'Anim_Idle_LookAround') p.add(name, 0.4, speedFor(name));
+    else p.play(name, { fadeIn: fadeFor(name), fadeOut: fadeFor(name), speed: speedFor(name) });
+    nextIdle = time + lengthOf(name) + 6 + Math.random() * 4;
+  }
+  /** Story: one clip per moment. He cups his ear to listen, taps on the tablet at "care", and presents
+      the dashboard once it has landed (holding the last frame). */
+  function storyClips(cur: Shot, revealSeg: boolean, r: number, k: number, docked: boolean) {
+    const want: ClipName | null =
+      docked || (revealSeg && r > 0.9)
+        ? 'Anim_Present'
+        : cur === SHOTS.listen
+          ? 'Anim_Listen_CupEar'
+          : cur === SHOTS.care && !(revealSeg && k > 0)
+            ? 'Anim_Tablet_Tap'
+            : null;
+    if (want === player!.current()) return;
+    if (want) player!.play(want, { fadeIn: 0.35, fadeOut: 0.35, hold: want === 'Anim_Present' });
+    else player!.stop(0.35);
+  }
+
   function frame(dt: number) {
     time += dt;
     if (!ready || !mode) return;
@@ -471,34 +580,54 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
       e = reduce ? 1 : ctaProgress();
     }
     const poseW = revealSeg ? (reduce ? (r < 0.5 ? 0 : 1) : smooth(0.08, 0.45, k)) : e;
+    const anim = live();
     let drop = 0, peekLook = -1;
+    const pop = introPop && anim;
+    // crouched, his head is lower: the view rises that much further to show the same peek
+    const peekAt = 0.64 - (pop ? crouch : 0);
     if (introWaiting && mode === 'hero') {
       // hidden below the studio's edge until the doors start to open
       if (!introGate || introGate()) {
         introWaiting = false;
         introStart = time;
-        nextAutoWave = time + INTRO_LEN + 0.6;
       } else drop = 1.18;
     }
     if (introStart >= 0 && mode === 'hero') {
-      const u = time - introStart;
-      if (u >= INTRO_LEN) {
+      const u = time - introStart, rise = u - INTRO.peek - INTRO.look;
+      if (rise >= (pop ? lengthOf('Anim_Intro_Pop') : INTRO.rise)) {
         introStart = -1;
-        triggerWave(2.1);
-        onIntroDone?.();
-      } else if (u < INTRO.peek) drop = lerp(1.18, 0.64, easeOutCubic(u / INTRO.peek));
-      else if (u < INTRO.peek + INTRO.look) {
+        signalIn();
+        if (anim) greet();
+      } else if (u < INTRO.peek) drop = lerp(1.18, peekAt, easeOutCubic(u / INTRO.peek));
+      else if (rise < 0) {
         peekLook = (u - INTRO.peek) / INTRO.look;
-        drop = 0.64 - Math.sin(Math.PI * peekLook) * 0.02;
+        drop = peekAt - Math.sin(Math.PI * peekLook) * 0.02;
         if (!introBlinked && peekLook > 0.55) {
           introBlinked = true;
           startBlink(null);
         }
-      } else drop = lerp(0.64, 0, easeOutBack((u - INTRO.peek - INTRO.look) / INTRO.rise));
+      } else if (pop) {
+        // he springs up out of the crouch as the view rises to him
+        player!.resume();
+        drop = lerp(peekAt, 0, easeOutCubic(clamp((rise * speedFor('Anim_Intro_Pop')) / INTRO.pop)));
+      } else drop = lerp(0.64, 0, easeOutBack(rise / INTRO.rise));
     }
+    if (anim) {
+      if (mode === 'hero') heroClips();
+      else if (mode === 'story') storyClips(poseW < 0.5 ? a : b, revealSeg, r, k, docked);
+      else if (!ctaOffered && e > 0.55) {
+        // the demo section: he offers his heart once it is in view, then holds it
+        ctaOffered = true;
+        player!.play('Anim_Heart_Offer', { fadeIn: 0.2, hold: true });
+      }
+      player!.update(dt);
+    } else player?.reset();
 
     /* body */
-    applyPose(rig, a.pose, b.pose, poseW);
+    const pa = anim && mode === 'cta' ? (ctaOffered ? 'Caring' : 'Rest') : restPose(a);
+    const pb = anim && mode === 'cta' ? pa : restPose(b);
+    applyPose(rig, pa, pb, poseW);
+    if (anim) player!.apply();
     const hk = (time - hopStart) / 0.5;
     if (hk >= 0 && hk < 1) bones.Root.position.y += Math.sin(Math.PI * hk) * 0.07;
     bones.Root.getWorldQuaternion(rootQ);
@@ -506,7 +635,8 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
     up.set(0, 1, 0).applyQuaternion(rootQ);
     fwd.set(0, 0, 1).applyQuaternion(rootQ);
     right.set(1, 0, 0).applyQuaternion(rootQ);
-    if (!reduce) rotateWorld(bones.Chest, right, Math.sin(at * 1.7) * 0.014);
+    // breathing, for a model without clips (with them, the breathing clip plays under everything)
+    if (!player && !reduce) rotateWorld(bones.Chest, right, Math.sin(at * 1.7) * 0.014);
 
     /* tablet in the left hand */
     model.updateMatrixWorld(true);
@@ -540,35 +670,23 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
       yawT += Math.sin(time * 0.37) * 0.05;
       pitchT += Math.sin(time * 0.29 + 1) * 0.03;
     }
-    const lookW = peekLook >= 0 ? 1 : track;
+    // a clip that turns his head has it; the pointer and the shot's tilt take it back as the clip lets go
+    const free = peekLook >= 0 || !anim ? 1 : 1 - player!.headLock();
+    const lookW = (peekLook >= 0 ? 1 : track) * free;
     look.yaw = lerp(look.yaw, yawT * lookW, 1 - Math.exp(-dt * 6));
     look.pitch = lerp(look.pitch, pitchT * lookW, 1 - Math.exp(-dt * 6));
     rotateWorld(bones.Neck, up, look.yaw * 0.35);
     rotateWorld(bones.Head, up, look.yaw * 0.65);
     rotateWorld(bones.Head, right, -look.pitch);
-    rotateWorld(bones.Head, fwd, lerp(a.tilt, b.tilt, e));
-
-    /* waving */
-    const isWave = (s: Shot) => s.pose === 'Wave' || s.pose === 'Hello';
-    const waveW = (isWave(a) ? 1 - poseW : 0) + (isWave(b) ? poseW : 0);
-    currentWaveW = waveW;
-    if (waveW > 0.001 && !reduce) {
-      if (!calm && time > nextAutoWave && waveW > 0.9 && time > waveEnd + 1) {
-        triggerWave(2.3);
-        nextAutoWave = time + 8 + Math.random() * 4;
-      }
-      const env = smooth(waveStart, waveStart + 0.25, time) * (1 - smooth(waveEnd - 0.35, waveEnd, time));
-      const ph = (time - waveStart) * Math.PI * 2 * 1.7;
-      rotateWorld(bones.Forearm_R, fwd, (Math.sin(ph) * 0.36 * env + Math.sin(at * 1.3) * 0.045) * waveW);
-      rotateWorld(bones.Hand_R, fwd, Math.sin(ph - 0.8) * 0.2 * env * waveW);
-    }
+    rotateWorld(bones.Head, fwd, lerp(a.tilt, b.tilt, e) * free);
     model.updateMatrixWorld(true);
     lensWorld.copy(LENS_LOCAL);
     headMesh.localToWorld(lensWorld);
 
-    /* hands, heart, face */
-    const poseNow = poseW < 0.5 ? a.pose : b.pose;
-    const vis = rig.visMap[poseNow] || [];
+    /* hands, heart, face: the playing clip's, or the pose's */
+    const poseNow = poseW < 0.5 ? pa : pb;
+    const clipVis = anim ? player!.visible() : null;
+    const vis = clipVis ?? rig.visMap[poseNow] ?? [];
     for (const n in hands) hands[n].visible = vis.includes(n);
     if (revealSeg && k > 0.06) {
       if (hands.Hand_Grip_L) hands.Hand_Grip_L.visible = false;
@@ -585,10 +703,12 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
       s0.obj.visible = s > 0.002;
     }
     let want: ExprName = poseW < 0.5 ? a.expr : b.expr;
+    if (anim && mode === 'cta' && !ctaOffered) want = 'Happy';
+    const face = clipVis?.find((n) => n.startsWith('Expr_'))?.slice(5);
+    if (face && exprs[face]) want = face as ExprName;
     if (revealSeg && r > 0.9 && !dockWinked) {
       winkUntil = time + 1.1;
       dockWinked = true;
-      triggerWave(1.6);
     }
     if (mode === 'story' && idx < I_CAREHOLD) dockWinked = false;
     if (time < winkUntil) want = 'Wink';
@@ -615,10 +735,10 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
     for (const n in exprs) {
       const o = exprs[n];
       o.visible = n === exprShown;
-      const beat = n === 'Caring' && !reduce ? 1 + heartbeat(at) * 0.1 : 1;
+      const beat = (n === 'Caring' || n === 'Love') && !reduce ? 1 + heartbeat(at) * 0.1 : 1;
       o.scale.set(beat, (1 - 0.9 * squash) * beat, 1);
     }
-    exprGlow.material.color.copy(exprShown === 'Caring' ? CORAL : BLUE);
+    exprGlow.material.color.copy(exprShown === 'Caring' || exprShown === 'Love' ? CORAL : BLUE);
     exprGlow.material.opacity = 0.5 * (1 - 0.7 * squash);
     const ear = lerp(a.ear, b.ear, e);
     const voice = reduce ? 0.5 : 0.5 + 0.5 * Math.sin(at * 5.3) * Math.sin(at * 2.1 + 1.2);
@@ -850,6 +970,7 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
     failed = true;
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerdown', onPointerDown);
+    window.removeEventListener(BUDDY_TALK_EVENT, onTalk);
     docEl.removeEventListener('mouseleave', onMouseLeave);
     mqDark.removeEventListener('change', readTheme);
     themeObserver.disconnect();

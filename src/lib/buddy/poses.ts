@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { LEFT_ARM } from './shots';
 
-/* Poses: the model's clips are single-frame poses, read once into per-bone
-   targets (AnimationMixer can't play duration-0 clips) and blended by hand. */
+/* Poses: the model's single-frame actions (Rest, Wave, HoldTablet, Caring), read
+   once into per-bone targets (AnimationMixer can't play duration-0 clips) and
+   blended by hand. The Anim_* clips are played over them (clips.ts). */
 
 export type BoneTarget = { p: THREE.Vector3; q: THREE.Quaternion; s: THREE.Vector3 };
 export type Pose = Record<string, BoneTarget>;
@@ -27,6 +28,7 @@ export function readRig(gltf: GLTF, model: THREE.Object3D): Rig {
   }
   const raw: Record<string, Record<string, PartialTarget>> = {};
   for (const clip of gltf.animations) {
+    if (clip.name.startsWith('Anim_')) continue;
     const P: Record<string, PartialTarget> = {};
     for (const tr of clip.tracks) {
       const dot = tr.name.lastIndexOf('.');

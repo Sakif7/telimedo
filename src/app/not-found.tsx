@@ -14,7 +14,7 @@ export default function NotFound() {
   return (
     <RuntimeProvider brand={brand.raw}>
       <main id="main" className={s.main}>
-        <PageStudio shot="listen" labelledBy="nf-title">
+        <PageStudio shot="listen" act="Anim_Confused" labelledBy="nf-title">
           <h1 id="nf-title" className={s.title}>
             {site.notFound.title}
           </h1>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type Ref } from 'react';
-import { BUDDY_IN_EVENT } from '@/lib/runtime/signals';
+import { BUDDY_IN_EVENT, BUDDY_TALK_EVENT } from '@/lib/runtime/signals';
 import s from './Studio.module.css';
 
 const TYPE_MS = 30, HOLD_MS = 2800;
@@ -38,11 +38,14 @@ export function SpeechBubble({ ref, lines, at, off }: Props) {
         const line = lines[i];
         fullEl.textContent = line;
         if (reduce) typedEl.textContent = line;
-        else
+        else {
+          // he talks with his hands while a line types (not on phones, where the bubble is hidden)
+          if (fullEl.offsetParent) window.dispatchEvent(new Event(BUDDY_TALK_EVENT));
           for (let n = 1; n <= line.length && !stop.signal.aborted; n++) {
             typedEl.textContent = line.slice(0, n);
             await wait(TYPE_MS);
           }
+        }
         await wait(HOLD_MS);
       }
     })();

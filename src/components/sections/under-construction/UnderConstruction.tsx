@@ -27,7 +27,7 @@ export function UnderConstruction({ slug }: { slug: PageSlug }) {
   return (
     <RuntimeProvider brand={brand.raw}>
       <main id="main" className={s.main}>
-        <PageStudio shot="care" labelledBy="page-title">
+        <PageStudio shot="care" act="Anim_Tablet_Tap" labelledBy="page-title">
           <h1 id="page-title" className={s.title}>
             {p.title}
           </h1>

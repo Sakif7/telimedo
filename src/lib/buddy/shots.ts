@@ -14,7 +14,7 @@ export const LEFT_ARM = ['Clavicle_L', 'UpperArm_Helper_L', 'UpperArm_L', 'Upper
 export const GLOW = 0x5fdcf0;
 
 export type PoseName = 'Hello' | 'Rest' | 'Wave' | 'HoldTablet' | 'Caring';
-export type ExprName = 'Happy' | 'Wink' | 'Caring';
+export type ExprName = 'Happy' | 'Wink' | 'Caring' | 'Surprised' | 'Thinking' | 'Joy' | 'Love';
 export type Shot = {
   /** Which story box the buddy is fitted into (hero and demo use their stage). */
   rect?: 'stage' | 'lens' | 'dock';
