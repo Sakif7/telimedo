@@ -1,0 +1,27 @@
+/* The first-visit doors: two dark panels whose shared edge is the heartbeat line.
+   Hidden unless scripts run and the doors haven't finished (see the layout's boot script). */
+.doors { position: fixed; inset: 0; z-index: 100; display: none; pointer-events: none; }
+:global(.js):not(:global(.doors-done)) .doors { display: block; pointer-events: auto; }
+:global(.doors-open) .doors { pointer-events: none; }
+
+.door { position: absolute; inset: 0; background: radial-gradient(70% 60% at 50% 50%, var(--band-2), var(--band) 70%); transition: transform 1.05s cubic-bezier(.72, 0, .18, 1); will-change: transform; }
+.door::before { content: ""; position: absolute; inset: 0; background-image: var(--grain); opacity: .12; mix-blend-mode: overlay; }
+:global(.doors-open) .top { transform: translateY(-100%); }
+:global(.doors-open) .bottom { transform: translateY(100%); }
+
+.mark { position: absolute; left: 50%; top: calc(50% - 150px); translate: -50% 0; line-height: 0; }
+.mark svg { display: block; height: 30px; width: auto; }
+
+/* The seam: a faint track, and the coral line filling it as the page loads (--load, 0 to 1). */
+.seam { position: absolute; left: 0; top: calc(50% - 100px); width: 100%; height: 200px; overflow: visible; }
+.seam path { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.base { stroke: var(--band-line); }
+.lit { stroke: var(--coral); clip-path: inset(-20% calc((1 - var(--load)) * 100%) -20% 0); }
+/* it lights up once before the doors part, then goes with them */
+.doors[data-state='beat'] .lit { animation: beat .46s ease-out both; }
+:global(.doors-open) .seam { opacity: 0; transition: opacity .2s ease; }
+@keyframes beat { 0% { stroke-width: 2.5; filter: none; } 35% { stroke: var(--coral-soft); stroke-width: 4.5; filter: drop-shadow(0 0 10px var(--coral)); } 100% { stroke: var(--coral); stroke-width: 3; filter: drop-shadow(0 0 4px var(--coral)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .doors { display: none !important; }
+}

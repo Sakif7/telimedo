@@ -50,6 +50,15 @@ export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): R
   }
   let buddy: Buddy | null = null;
   const fx = createPageFx({ story, manifesto: reg.manifesto });
+
+  /* loading progress for the doors' heartbeat line (--load on <html>, only ever rises) */
+  let load = 0;
+  const setLoad = (v: number) => {
+    if (v <= load) return;
+    load = v;
+    docEl.style.setProperty('--load', v.toFixed(3));
+  };
+  setLoad(0.3);
   cleanups.push(fx.dispose);
 
   const posters = [reg.hero?.poster, storyRefs?.poster, reg.cta?.poster].filter(Boolean) as HTMLElement[];
@@ -94,15 +103,21 @@ export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): R
         markSvg: brand.mark,
         heroShot: reg.hero?.shot,
         intro: () => !motion.reduce && !window.__buddyCalm && !docEl.classList.contains('poster-late'),
+        introGate: () => docEl.classList.contains('doors-open'),
+        onProgress: (f) => setLoad(0.3 + 0.55 * f),
         onIntroDone: () => {
           if (disposed) return;
           docEl.classList.add('buddy-in');
           window.dispatchEvent(new Event(BUDDY_IN_EVENT));
         },
-        onReady: () => docEl.classList.add('gl-ready'),
+        onReady: () => {
+          setLoad(0.9);
+          docEl.classList.add('gl-ready');
+        },
         onFail: no3d,
         onFirstFrame: () => {
           drawn = true;
+          setLoad(1);
           posters.forEach((p) => p.classList.add('gone'));
           docEl.classList.add('gl-live');
         },

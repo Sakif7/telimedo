@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Bricolage_Grotesque, DM_Mono, Figtree } from 'next/font/google';
 import { site } from '@/content/site';
+import { Doors } from '@/components/layout/Doors';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
 import { PageTransitions } from '@/components/layout/PageTransitions';
@@ -42,8 +43,10 @@ export const viewport: Viewport = {
 };
 
 /* Before first paint: mark that scripts run (entrance animations only play then;
-   nothing waits hidden without JS) and apply a theme the visitor picked earlier. */
-const BOOT = `(function(){var d=document.documentElement,c=d.classList;c.add('js');try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')d.setAttribute('data-theme',t)}catch(e){}})()`;
+   nothing waits hidden without JS), apply a theme the visitor picked earlier, and
+   skip the doors when motion is reduced or they already opened in this tab
+   (sessionStorage), unless the URL asks for them again with ?doors. */
+const BOOT = `(function(){var d=document.documentElement,c=d.classList;c.add('js');try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')d.setAttribute('data-theme',t)}catch(e){}try{var r=matchMedia('(prefers-reduced-motion: reduce)').matches,f=/[?&]doors\\b/.test(location.search);if(r||(!f&&sessionStorage.getItem('telimedo:doors')))c.add('doors-open','doors-done')}catch(e){}})()`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -55,6 +58,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a className="skip" href="#main">
           {site.a11y.skip}
         </a>
+        <Doors wordmark={brand.wordmark} />
         <Header wordmark={brand.wordmark} />
         {children}
         <Footer wordmarkMono={brand.wordmarkMono} year={new Date().getFullYear()} />

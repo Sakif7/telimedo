@@ -69,6 +69,11 @@ p { text-wrap: pretty; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
 }
 
+/* Loading progress of the page and the 3D (0 to 1), set on <html> by the runtime and the
+   doors; registered so the doors' heartbeat line fills smoothly between updates. */
+@property --load { syntax: '<number>'; inherits: true; initial-value: 0; }
+:root { transition: --load .55s var(--ease); }
+
 /* Page transitions: the screen closes and opens like the buddy's camera iris
    (components/layout/PageTransitions.tsx starts them). The aperture has eight
    blades that turn as it closes; behind it is the dark studio band. */

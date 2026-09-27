@@ -38,6 +38,10 @@ export type EngineOptions = {
   intro?: () => boolean;
   /** The buddy is in place: after the intro, or straight away without one. */
   onIntroDone?: () => void;
+  /** Once the intro is chosen, it waits (hidden below the edge) until this is true: the doors opening. */
+  introGate?: () => boolean;
+  /** Model download progress, 0 to 1. */
+  onProgress?: (fraction: number) => void;
   onReady?: () => void;
   onFail: () => void;
   onFirstFrame?: () => void;
@@ -60,7 +64,7 @@ function webgl2Available() {
 /** Pointer targets that belong to the page, not to the buddy. */
 const INTERACTIVE = 'a, button, input, textarea, select, label, form, [data-interactive]';
 
-export function createBuddy({ story, slots, stages, chips, assets, markSvg, heroShot = 'hero', intro, onIntroDone, onReady, onFail, onFirstFrame }: EngineOptions) {
+export function createBuddy({ story, slots, stages, chips, assets, markSvg, heroShot = 'hero', intro, onIntroDone, introGate, onProgress, onReady, onFail, onFirstFrame }: EngineOptions) {
   if (!webgl2Available()) {
     onFail();
     return null;
@@ -150,7 +154,9 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
       draco.dispose();
       onModel(gltf);
     },
-    undefined,
+    (e) => {
+      if (e.total) onProgress?.(e.loaded / e.total);
+    },
     (err) => {
       draco.dispose();
       if (disposed) return;
@@ -467,9 +473,12 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, hero
     const poseW = revealSeg ? (reduce ? (r < 0.5 ? 0 : 1) : smooth(0.08, 0.45, k)) : e;
     let drop = 0, peekLook = -1;
     if (introWaiting && mode === 'hero') {
-      introWaiting = false;
-      introStart = time;
-      nextAutoWave = time + INTRO_LEN + 0.6;
+      // hidden below the studio's edge until the doors start to open
+      if (!introGate || introGate()) {
+        introWaiting = false;
+        introStart = time;
+        nextAutoWave = time + INTRO_LEN + 0.6;
+      } else drop = 1.18;
     }
     if (introStart >= 0 && mode === 'hero') {
       const u = time - introStart;

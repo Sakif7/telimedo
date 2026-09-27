@@ -9,14 +9,14 @@
 .pulseWord { position: relative; display: inline-block; }
 .pulse { position: absolute; left: 0; top: 100%; width: 100%; height: 28px; margin-top: -4px; overflow: visible; }
 .pulse path { fill: none; stroke: var(--coral); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 0; }
-:global(.js) .hero .line > span { animation: rise 1.1s var(--ease) both; }
-:global(.js) .hero .line:nth-child(2) > span { animation-delay: .09s; }
-:global(.js) .hero :global(.lede) { animation: rise 1.1s var(--ease) .2s both; }
-:global(.js) .hero .actions { animation: rise 1.1s var(--ease) .28s both; }
-:global(.js) .hero .trust { animation: rise 1.1s var(--ease) .36s both; }
+:global(.js.doors-open) .hero .line > span { animation: rise 1.1s var(--ease) both; }
+:global(.js.doors-open) .hero .line:nth-child(2) > span { animation-delay: .09s; }
+:global(.js.doors-open) .hero :global(.lede) { animation: rise 1.1s var(--ease) .2s both; }
+:global(.js.doors-open) .hero .actions { animation: rise 1.1s var(--ease) .28s both; }
+:global(.js.doors-open) .hero .trust { animation: rise 1.1s var(--ease) .36s both; }
 /* the line is measured to the word after hydration, then drawn */
 :global(.js) .pulse path { stroke-dashoffset: 1; }
-:global(.js) .pulse[data-ready] path { animation: draw 1.7s cubic-bezier(.55, .1, .25, 1) .55s both; }
+:global(.js.doors-open) .pulse[data-ready] path { animation: draw 1.7s cubic-bezier(.55, .1, .25, 1) .55s both; }
 @keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
 .actions { display: flex; flex-wrap: wrap; gap: 12px; }
