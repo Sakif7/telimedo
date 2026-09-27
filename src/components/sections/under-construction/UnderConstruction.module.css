@@ -1,0 +1,6 @@
+.main { padding: calc(env(safe-area-inset-top, 0px) + 10px) 10px 0; }
+.title { font-size: clamp(48px, 6vw, 96px); line-height: .94; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+@media (max-width: 899px) {
+  .main { padding-inline: 8px; }
+}

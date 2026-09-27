@@ -1,4 +1,4 @@
-/* Every string on the home page. Components render from here and never hardcode
+/* Every string on the site. Components render from here and never hardcode
    marketing copy. Anything that still needs real data from the owner is a
    Placeholder ({ placeholder: true }): it renders with the dotted coral underline
    (.ph) and carries a note saying what to replace. */
@@ -46,14 +46,14 @@ export const site = {
 
   nav: {
     links: [
-      { label: 'How it works', href: '#how' },
-      { label: 'Product', href: '#product' },
-      { label: 'Solutions', href: '#solutions' },
-      { label: 'Security', href: '#security' },
-      { label: 'Pricing', href: '#pricing' },
+      { label: 'How it works', href: '/how-it-works' },
+      { label: 'Product', href: '/product' },
+      { label: 'Solutions', href: '/solutions' },
+      { label: 'Security', href: '/security' },
+      { label: 'Pricing', href: '/pricing' },
     ] as Link[],
     signIn: { label: 'Sign in', href: '#signin', placeholder: { note: "Placeholder: link to your app's sign-in page" } } as Link,
-    demo: { label: 'Book a demo', href: '#demo' } as Link,
+    demo: { label: 'Book a demo', href: '/#demo' } as Link,
   },
 
   hero: {
@@ -436,27 +436,27 @@ export const site = {
       {
         title: 'Product',
         links: [
-          { label: 'How it works', href: '#how' },
-          { label: 'Features', href: '#product' },
-          { label: 'Security', href: '#security' },
-          { label: 'Pricing', href: '#pricing' },
-        ] as (Link & { tab?: string })[],
+          { label: 'How it works', href: '/how-it-works' },
+          { label: 'Features', href: '/product' },
+          { label: 'Security', href: '/security' },
+          { label: 'Pricing', href: '/pricing' },
+        ] as Link[],
       },
       {
         title: 'Solutions',
         links: [
-          { label: 'Clinics and hospitals', href: '#solutions', tab: 'clinics' },
-          { label: 'Employers and health plans', href: '#solutions', tab: 'employers' },
-          { label: 'Patients', href: '#solutions', tab: 'patients' },
-        ] as (Link & { tab?: string })[],
+          { label: 'Clinics and hospitals', href: '/solutions#clinics' },
+          { label: 'Employers and health plans', href: '/solutions#employers' },
+          { label: 'Patients', href: '/solutions#patients' },
+        ] as Link[],
       },
       {
         title: 'Company',
         links: [
           { label: 'About', href: '#about', placeholder: { note: 'Placeholder: link to your About page' } },
           { label: 'Careers', href: '#careers', placeholder: { note: 'Placeholder: link to your Careers page' } },
-          { label: 'Contact', href: '#demo' },
-        ] as (Link & { tab?: string })[],
+          { label: 'Contact', href: '/#demo' },
+        ] as Link[],
       },
       {
         title: 'Legal',
@@ -464,7 +464,7 @@ export const site = {
           { label: 'Privacy policy', href: '#privacy', placeholder: { note: 'Placeholder: link to your privacy policy' } },
           { label: 'Terms of service', href: '#terms', placeholder: { note: 'Placeholder: link to your terms of service' } },
           { label: 'HIPAA notice', href: '#hipaa', placeholder: { note: 'Placeholder: link to your HIPAA notice' } },
-        ] as (Link & { tab?: string })[],
+        ] as Link[],
       },
     ],
     rights: (year: number) => `© ${year} Telimedo. All rights reserved.`,
@@ -473,7 +473,43 @@ export const site = {
 
   sayHi: 'Say hi',
 
+  pages: {
+    underConstruction: {
+      body: 'This page is still being built. The short version is on the home page, and we can walk you through the rest in a demo.',
+      back: 'Read the short version',
+      demo: 'Book a demo',
+    },
+    list: {
+      'how-it-works': {
+        title: 'How it works',
+        description: 'How a Telimedo video visit works, from the first message to the follow-up.',
+        section: '/#how',
+      },
+      product: {
+        title: 'Product',
+        description: 'Booking, video visits, e-prescriptions, reminders, records and payments in one workspace.',
+        section: '/#product',
+      },
+      solutions: {
+        title: 'Solutions',
+        description: 'Telimedo for clinics and hospitals, employers and health plans, and patients.',
+        section: '/#solutions',
+      },
+      security: {
+        title: 'Security',
+        description: 'How Telimedo protects patient data, with encryption, role-based access and a full audit trail.',
+        section: '/#security',
+      },
+      pricing: {
+        title: 'Pricing',
+        description: 'Telimedo is priced per clinician. Patients and staff are free.',
+        section: '/#pricing',
+      },
+    },
+  },
+
   notFound: {
+    metaTitle: 'Page not found',
     title: "This page isn't here.",
     body: 'The link may be out of date, or the page has moved.',
     home: 'Go to the home page',

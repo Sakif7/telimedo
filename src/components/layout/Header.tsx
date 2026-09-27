@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { site } from '@/content/site';
 import { Button } from '@/components/ui/Button';
@@ -7,11 +9,14 @@ import s from './Header.module.css';
 
 const nav = site.nav;
 
-/** Floating glass header: scrolled state, active-section dot, phone menu (Escape closes it). */
+/** Floating glass header: page links (the current page is marked), phone menu (Escape closes it). */
 export function Header({ wordmark }: { wordmark: string }) {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
+  // the menu belongs to the page it was opened on, so it is closed on any other page (browser back included)
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
+  const setOpen = (next: boolean) => setOpenOn(next ? pathname : null);
   const menuBtn = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -22,23 +27,10 @@ export function Header({ wordmark }: { wordmark: string }) {
   }, []);
 
   useEffect(() => {
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((en) => {
-          if (en.isIntersecting) setActive(en.target.id);
-        });
-      },
-      { rootMargin: '-45% 0px -50% 0px' },
-    );
-    document.querySelectorAll('main > section[id]').forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
-
-  useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setOpen(false);
+        setOpenOn(null);
         menuBtn.current?.focus();
       }
     };
@@ -46,16 +38,17 @@ export function Header({ wordmark }: { wordmark: string }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
 
+  const current = (href: string) => pathname === href || pathname.startsWith(href + '/');
   const cls = [s.header, scrolled ? s.scrolled : '', open ? s.menuOpen : ''].filter(Boolean).join(' ');
   return (
     <header className={cls} data-interactive="">
       <div className={s.bar}>
-        <a className={s.brand} href="#top" aria-label={site.a11y.home} dangerouslySetInnerHTML={{ __html: wordmark }} />
+        <Link className={s.brand} href="/" aria-label={site.a11y.home} dangerouslySetInnerHTML={{ __html: wordmark }} />
         <nav className={s.nav} aria-label={site.a11y.mainNav}>
           {nav.links.map((l) => (
-            <a key={l.href} href={l.href} className={active && l.href === '#' + active ? s.on : undefined}>
+            <Link key={l.href} href={l.href} className={current(l.href) ? s.on : undefined} aria-current={current(l.href) ? 'page' : undefined}>
               {l.label}
-            </a>
+            </Link>
           ))}
         </nav>
         <div className={s.actions}>
@@ -72,7 +65,7 @@ export function Header({ wordmark }: { wordmark: string }) {
             aria-controls="mobile-nav"
             aria-label={open ? site.a11y.closeMenu : site.a11y.openMenu}
             ref={menuBtn}
-            onClick={() => setOpen((o) => !o)}
+            onClick={() => setOpen(!open)}
           >
             <span />
             <span />
@@ -88,9 +81,9 @@ export function Header({ wordmark }: { wordmark: string }) {
         }}
       >
         {nav.links.map((l) => (
-          <a key={l.href} href={l.href}>
+          <Link key={l.href} href={l.href} aria-current={current(l.href) ? 'page' : undefined}>
             {l.label}
-          </a>
+          </Link>
         ))}
         <a href={nav.signIn.href} data-placeholder-link="" title={nav.signIn.placeholder?.note}>
           {nav.signIn.label}

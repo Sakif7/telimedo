@@ -7,7 +7,7 @@ import type { ManifestoRefs } from './types';
    entrance reveals, count-ups, the manifesto ink-in (ticked by the runtime
    loop) and magnetic buttons. Components own the rest
    (header, tabs, billing, FAQ, vignettes, form). */
-export function createPageFx({ story, manifesto }: { story: Story; manifesto?: ManifestoRefs }) {
+export function createPageFx({ story, manifesto }: { story: Story | null; manifesto?: ManifestoRefs }) {
   const off: (() => void)[] = [];
   const on = <K extends keyof HTMLElementEventMap>(el: HTMLElement | Document, type: K, fn: (e: HTMLElementEventMap[K]) => void) => {
     el.addEventListener(type, fn as EventListener);
@@ -25,7 +25,7 @@ export function createPageFx({ story, manifesto }: { story: Story; manifesto?: M
       return;
     }
     const step = a.dataset.step;
-    if (step != null) {
+    if (step != null && story) {
       e.preventDefault();
       story.jumpToStep(+step);
       return;

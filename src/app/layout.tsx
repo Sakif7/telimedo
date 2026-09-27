@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Bricolage_Grotesque, DM_Mono, Figtree } from 'next/font/google';
 import { site } from '@/content/site';
+import { Footer } from '@/components/layout/Footer';
+import { Header } from '@/components/layout/Header';
+import { brand } from '@/lib/brand';
 import { siteUrl } from '@/lib/site-url';
 import '@/styles/tokens.css';
 import '@/styles/globals.css';
@@ -11,7 +14,7 @@ const mono = DM_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: site.meta.title,
+  title: { default: site.meta.title, template: `%s | ${site.meta.siteName}` },
   description: site.meta.description,
   applicationName: site.meta.siteName,
   alternates: { canonical: '/' },
@@ -48,7 +51,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a className="skip" href="#main">
           {site.a11y.skip}
         </a>
+        <Header wordmark={brand.wordmark} />
         {children}
+        <Footer wordmarkMono={brand.wordmarkMono} year={new Date().getFullYear()} />
       </body>
     </html>
   );

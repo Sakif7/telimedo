@@ -11,7 +11,8 @@ import type { BrandSvgs, Registry } from './types';
 /* Wiring (v1 main.js): mounts the product UI, creates the story controller and
    the page effects, lazily loads the 3D engine, picks the active studio every
    frame and runs the single requestAnimationFrame loop. Client-only; created
-   after hydration by RuntimeProvider and disposed with it. */
+   after hydration by RuntimeProvider and disposed with it. The home page has the
+   story; other pages have one studio (registered as "hero") and no story. */
 
 export const ASSETS = {
   model: '/models/telimedo_buddy.glb',
@@ -30,33 +31,37 @@ const hooksEnabled = () => process.env.NODE_ENV !== 'production' || window.__bud
 export type Runtime = { sayHi: () => void; dispose: () => void };
 
 export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): Runtime | null {
-  const storyRefs = reg.story;
-  if (!storyRefs) return null;
+  const storyRefs = reg.story ?? null;
+  if (!storyRefs && !reg.hero && !reg.cta) return null;
   const docEl = document.documentElement;
   let disposed = false;
   const cleanups: (() => void)[] = [];
   cleanups.push(watchReducedMotion());
 
-  /* product UI inside the device */
+  /* product UI inside the device, and the story (home page only) */
   const goDemo = () => document.getElementById('demo')?.scrollIntoView({ behavior: motion.reduce ? 'auto' : 'smooth' });
-  const desk = mountDesk(storyRefs.appDesk, { onDemo: goDemo, brand });
-  const compact = mountCompact(storyRefs.appCompact, { brand });
-  cleanups.push(desk.dispose, compact.dispose);
-
-  const story = createStory(storyRefs, { countLabel: site.story.count });
-  cleanups.push(story.dispose);
+  let story: ReturnType<typeof createStory> | null = null;
+  if (storyRefs) {
+    const desk = mountDesk(storyRefs.appDesk, { onDemo: goDemo, brand });
+    const compact = mountCompact(storyRefs.appCompact, { brand });
+    cleanups.push(desk.dispose, compact.dispose);
+    story = createStory(storyRefs, { countLabel: site.story.count });
+    cleanups.push(story.dispose);
+  }
   let buddy: Buddy | null = null;
   const fx = createPageFx({ story, manifesto: reg.manifesto });
   cleanups.push(fx.dispose);
 
-  const posters = [reg.hero?.poster, storyRefs.poster, reg.cta?.poster].filter(Boolean) as HTMLElement[];
+  const posters = [reg.hero?.poster, storyRefs?.poster, reg.cta?.poster].filter(Boolean) as HTMLElement[];
 
   function no3d() {
     if (disposed) return;
     docEl.classList.add('no-3d');
     docEl.classList.remove('gl-live');
-    story.st.no3d = true;
-    story.apply(story.st.sp, true);
+    if (story) {
+      story.st.no3d = true;
+      story.apply(story.st.sp, true);
+    }
     posters.forEach((p) => p.classList.remove('gone'));
   }
 
@@ -82,11 +87,12 @@ export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): R
       cleanups.push(() => engine.dispose());
       buddy = engine.init({
         story,
-        slots: { hero: reg.hero?.slot ?? null, story: storyRefs.glSlot, cta: reg.cta?.slot ?? null },
+        slots: { hero: reg.hero?.slot ?? null, story: storyRefs?.glSlot ?? null, cta: reg.cta?.slot ?? null },
         stages: { hero: reg.hero?.stage ?? null, cta: reg.cta?.stage ?? null },
         chips: { hero: chips, hi: reg.sayHi ?? null, avoid: reg.hero?.avoid ?? null },
         assets: ASSETS,
         markSvg: brand.mark,
+        heroShot: reg.hero?.shot,
         intro: () => !motion.reduce && !window.__buddyCalm && !docEl.classList.contains('poster-late'),
         onIntroDone: () => {
           if (disposed) return;
@@ -112,7 +118,7 @@ export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): R
   /* the canvas lives in whichever studio is on screen (the one showing the most of itself) */
   const studioEls: [Mode, HTMLElement | undefined][] = [
     ['hero', reg.hero?.card],
-    ['story', story.sticky],
+    ['story', story?.sticky],
     ['cta', reg.cta?.card],
   ];
   function pickMode() {
@@ -134,7 +140,7 @@ export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): R
   /* layout */
   function onResize() {
     if (disposed) return;
-    story.layout();
+    story?.layout();
     buddy?.resize();
     fx.resize();
   }
@@ -145,7 +151,7 @@ export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): R
   };
   window.addEventListener('resize', scheduleResize);
   const ro = new ResizeObserver(scheduleResize);
-  for (const el of [story.sticky, reg.hero?.card, reg.cta?.card]) if (el) ro.observe(el);
+  for (const el of [story?.sticky, reg.hero?.card, reg.cta?.card]) if (el) ro.observe(el);
   cleanups.push(() => {
     window.removeEventListener('resize', scheduleResize);
     ro.disconnect();
@@ -166,7 +172,7 @@ export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): R
     raf = requestAnimationFrame(loop);
     const dt = Math.min(Math.max(0, (now - last) / 1000), window.__buddyDtCap || 0.05);
     last = now;
-    story.update(dt);
+    story?.update(dt);
     fx.tick();
     pickMode();
     if (buddy && buddy.ready && buddy.mode) buddy.frame(dt);
@@ -177,16 +183,16 @@ export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): R
   /* hooks for rendering stills and automated checks */
   if (hooksEnabled()) {
     window.__buddy = {
-      ready: () => !!(buddy && buddy.ready && buddy.firstFrame && buddy.texReady()),
+      ready: () => !!(buddy && buddy.ready && buddy.firstFrame && (!story || buddy.texReady())),
       still: (w, h, extra) => buddy?.still(w, h, extra),
       mode: () => buddy?.mode,
-      storyY: (sp) => story.storyY(sp),
+      storyY: (sp) => story?.storyY(sp) ?? 0,
       KF: { ...KF },
       no3d: () => docEl.classList.contains('no-3d'),
       landing: () => {
         const t = buddy?.landing();
-        const geo = story.st.geo;
-        if (!t || !geo) return null;
+        const geo = story?.st.geo;
+        if (!t || !geo || !story) return null;
         const d = story.device.getBoundingClientRect();
         return { tablet: t, device: { x: d.left + geo.bz, y: d.top + geo.bz, w: d.width - 2 * geo.bz, h: d.height - 2 * geo.bz } };
       },

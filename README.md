@@ -1,6 +1,6 @@
 # Telimedo website
 
-The marketing site for Telimedo, a telemedicine platform for clinics, employers and patients. It is a single page built with Next.js (App Router, TypeScript) and plain CSS. A 3D buddy, rendered with three.js, walks visitors through a video visit: he listens, his lens opens into the call, and he hands over the clinic dashboard.
+The marketing site for Telimedo, a telemedicine platform for clinics, employers and patients, built with Next.js (App Router, TypeScript) and plain CSS. A 3D buddy, rendered with three.js, walks visitors through a video visit on the home page: he listens, his lens opens into the call, and he hands over the clinic dashboard. The pages behind the nav (How it works, Product, Solutions, Security, Pricing) are under construction for now, each pointing to its short version on the home page.
 
 ## Run it
 

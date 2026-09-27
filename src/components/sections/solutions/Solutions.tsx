@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { site } from '@/content/site';
 import { countUp } from '@/lib/count-up';
-import { SELECT_TAB_EVENT } from '@/lib/events';
 import { Button } from '@/components/ui/Button';
 import { Placeholder } from '@/components/ui/Placeholder';
 import { Rich } from '@/components/ui/Rich';
@@ -63,15 +62,6 @@ export function Solutions() {
     setSelected(id);
     if (focus) tabRefs.current[id]?.focus();
   }, []);
-
-  useEffect(() => {
-    const onSelect = (e: Event) => {
-      const id = (e as CustomEvent<string>).detail;
-      if (copy.tabs.some((t) => t.id === id)) select(id as TabId);
-    };
-    window.addEventListener(SELECT_TAB_EVENT, onSelect);
-    return () => window.removeEventListener(SELECT_TAB_EVENT, onSelect);
-  }, [select]);
 
   return (
     <Section id="solutions" className={s.solutions}>

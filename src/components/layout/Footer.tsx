@@ -1,6 +1,7 @@
+import Link from 'next/link';
 import { site } from '@/content/site';
 import { Placeholder } from '@/components/ui/Placeholder';
-import { FooterRights, TabLink } from './FooterClient';
+import { FooterRights } from './FooterClient';
 import s from './Footer.module.css';
 
 const copy = site.footer;
@@ -25,16 +26,12 @@ export function Footer({ wordmarkMono, year }: { wordmarkMono: string; year: num
               <ul>
                 {col.links.map((l) => (
                   <li key={l.label}>
-                    {l.tab ? (
-                      <TabLink href={l.href} tab={l.tab}>
-                        {l.label}
-                      </TabLink>
-                    ) : l.placeholder ? (
+                    {l.placeholder ? (
                       <a href={l.href} data-placeholder-link="" title={l.placeholder.note}>
                         {l.label}
                       </a>
                     ) : (
-                      <a href={l.href}>{l.label}</a>
+                      <Link href={l.href}>{l.label}</Link>
                     )}
                   </li>
                 ))}

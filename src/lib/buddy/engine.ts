@@ -8,7 +8,7 @@ import { conformRing, decalMaterial, glowMaterial, radialTexture } from './glow'
 import { buildPedestal } from './pedestal';
 import { applyPose, heartbeat, readRig, rotateWorld, type Rig } from './poses';
 import { createPortal } from './portal';
-import { BODY, BODY_C, I_CAREHOLD, I_DOCK, LENS_FIT, LENS_LOCAL, makeShots, makeStoryAnchors, POSTER, TAB, type ExprName, type Shot } from './shots';
+import { BODY, BODY_C, I_CAREHOLD, I_DOCK, LENS_FIT, LENS_LOCAL, makeShots, makeStoryAnchors, POSTER, TAB, type ExprName, type Shot, type ShotName } from './shots';
 import { buildTablet, setTabletDims, type Tablet } from './tablet';
 import { applyTheme, isDarkScene } from './theme';
 
@@ -16,21 +16,24 @@ import { applyTheme, isDarkScene } from './theme';
    poses, shots, camera fitting, glow, pedestal, tablet flight, lens portal, hero
    chips and pointer. One canvas moves between the studio slots; the runtime's
    single rAF loop calls frame(). dispose() releases everything.
-   The first time the hero studio is shown, the buddy peeks in from its bottom
-   edge before rising into place (the intro). */
+   The first studio ("hero": the home hero, or the studio on other pages) can use
+   another shot, and the first time it is shown the buddy peeks in from its bottom
+   edge before rising into place (the intro). Pages without the story pass none. */
 
 export type Mode = 'hero' | 'story' | 'cta';
 /** An element anchored to a 3D point: `align` which side sits on the point (left/right), `valign` whether it is centred on it or sits above it (bottom). */
 export type Chip = { el: HTMLElement; at: number[]; off: number[]; align: string; valign?: string; hidden?: boolean };
 
 export type EngineOptions = {
-  story: Story;
+  story: Story | null;
   slots: Record<Mode, HTMLElement | null>;
   stages: { hero: HTMLElement | null; cta: HTMLElement | null };
   chips: { hero: Chip[]; cta?: Chip[]; hi: HTMLElement | null; avoid: HTMLElement | null };
   assets: { model: string; decoder: string; desk: string; compact: string };
   /** Raw mark SVG, drawn on the back of the tablet. */
   markSvg: string;
+  /** The first studio's shot: 'hero' on the home page, another pose on other pages. */
+  heroShot?: ShotName;
   /** Asked when the first studio is first shown: play the intro? (not with reduced motion or a late start) */
   intro?: () => boolean;
   /** The buddy is in place: after the intro, or straight away without one. */
@@ -57,7 +60,7 @@ function webgl2Available() {
 /** Pointer targets that belong to the page, not to the buddy. */
 const INTERACTIVE = 'a, button, input, textarea, select, label, form, [data-interactive]';
 
-export function createBuddy({ story, slots, stages, chips, assets, markSvg, intro, onIntroDone, onReady, onFail, onFirstFrame }: EngineOptions) {
+export function createBuddy({ story, slots, stages, chips, assets, markSvg, heroShot = 'hero', intro, onIntroDone, onReady, onFail, onFirstFrame }: EngineOptions) {
   if (!webgl2Available()) {
     onFail();
     return null;
@@ -81,6 +84,7 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, intr
   let W = 1, H = 1, mode: Mode | null = null, ready = false, failed = false, firstFrame = false, disposed = false;
   const SHOTS = makeShots();
   const STORY = makeStoryAnchors(SHOTS);
+  const HERO = SHOTS[heroShot];
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(24, 1, 0.05, 80);
   const TAN_HALF = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
@@ -372,7 +376,7 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, intr
     resize();
     // entering a studio: start from its own resting state
     for (const n in propState) propState[n].p = 0;
-    tablet.presence = m === 'hero' ? 1 : 0;
+    tablet.presence = m === 'hero' && HERO.tablet ? 1 : 0;
     if (!introDone) {
       // the intro only plays when the first studio is the first thing he appears in
       introDone = true;
@@ -405,7 +409,7 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, intr
   const BLUE = new THREE.Color(0x4fc3d9), CORAL = new THREE.Color(0xff6f6f);
   let exprShown: ExprName = 'Happy', blink: { active: boolean; t0: number; swap: ExprName | null } = { active: false, t0: 0, swap: null }, nextBlink = 3;
   let dockWinked = false;
-  const portal = createPortal(story);
+  const portal = story ? createPortal(story) : null;
   const fitOf = (s: Shot) => (s.fit === 'lens' ? { c: lensWorld, h: LENS_FIT, w: LENS_FIT } : { c: BODY_C, h: BODY.h, w: BODY.w });
   function portalAmount(a: Shot, b: Shot, t: number) {
     if (a.portal === b.portal) return a.portal;
@@ -418,14 +422,14 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, intr
   function rectFor(shot: Shot): Rect {
     if (mode === 'hero') return rects.hero!;
     if (mode === 'cta') return rects.cta!;
-    return story.st.geo![shot.rect || 'stage'];
+    return story!.st.geo![shot.rect || 'stage'];
   }
   function ctaProgress() {
     const r = slots.cta!.getBoundingClientRect();
     const vis = (innerHeight - r.top) / Math.max(1, Math.min(r.height, innerHeight));
     return smooth(0.25, 0.75, vis);
   }
-  const updatePortal = (p: number) => portal.update(p, { camera, lensWorld, headMesh, W, H, time: window.__buddyCalm ? 0 : time });
+  const updatePortal = (p: number) => portal?.update(p, { camera, lensWorld, headMesh, W, H, time: window.__buddyCalm ? 0 : time });
 
   function frame(dt: number) {
     time += dt;
@@ -436,7 +440,7 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, intr
     const at = calm ? 0 : time;
     const bones = rig.bones;
     let a: Shot, b: Shot, e: number, t = 0, revealSeg = false, r = 0, k = 0, portalP = 0, docked = false, idx = -1;
-    if (mode === 'story') {
+    if (mode === 'story' && story) {
       const sp = story.st.sp;
       let i = 0;
       while (i < STORY.length - 2 && sp > STORY[i + 1].y) i++;
@@ -453,7 +457,7 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, intr
       if (revealSeg && !reduce) e = smooth(0, 0.5, t);
       portalP = portalAmount(a, b, t);
     } else if (mode === 'hero') {
-      a = b = SHOTS.hero;
+      a = b = HERO;
       e = 0;
     } else {
       a = SHOTS.ctaIn;
@@ -644,7 +648,7 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, intr
 
     updateTablet(a, b, e, revealSeg, r, k, dt, dist, docked);
     if (mode === 'story') updatePortal(portalP);
-    else if (portal.visible) updatePortal(0);
+    else if (portal?.visible) updatePortal(0);
     if (mode !== 'story') placeChips(ppu);
 
     // hover: a friendly "Say hi" label follows the cursor over him
@@ -706,17 +710,17 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, intr
     tablet.presence = reduce ? want : clamp(tablet.presence + (want ? 1 : -1.7) * (dt / 0.42), 0, 1);
     if ((revealSeg && k > 0) || docked) tablet.presence = 1;
     const pres = want ? easeOutBack(tablet.presence) : tablet.presence * tablet.presence;
-    const handoff = mode === 'story' ? story.st.handoff : 0;
+    const handoff = mode === 'story' && story ? story.st.handoff : 0;
     const showTab = pres > 0.002 && handoff < 0.999;
     tablet.root.visible = showTab;
     if (!showTab) return;
-    const compact = story.st.compact;
+    const compact = story?.st.compact ?? false;
     const u = tablet.screen.material.uniforms;
     u.uMix.value = compact ? 0 : smooth(0.35, 0.62, k);
     if (!u.uMapA.value && TEX.compact) u.uMapA.value = TEX.compact;
     if (TEX.desk && u.uMapB.value !== TEX.desk) u.uMapB.value = TEX.desk;
 
-    if (k <= 0 || mode !== 'story') {
+    if (k <= 0 || mode !== 'story' || !story) {
       tablet.root.position.copy(tabPosA);
       tablet.root.quaternion.copy(tabQA);
       tablet.root.scale.setScalar(Math.max(pres, 1e-4));

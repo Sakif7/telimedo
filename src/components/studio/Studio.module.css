@@ -48,3 +48,16 @@
 /* the "Say hi" label that follows the cursor over the buddy */
 .sayHi { position: fixed; left: 0; top: 0; z-index: 60; padding: 7px 11px; border-radius: 999px; background: var(--ink); color: var(--bg); font: 500 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; pointer-events: none; opacity: 0; transition: opacity .2s ease; }
 .sayHi:global(.on) { opacity: 1; }
+
+/* Page studio (under-construction pages and the 404): the hero's layout, a little shorter. */
+.page { position: relative; overflow: hidden; isolation: isolate; border-radius: var(--radius); min-height: clamp(560px, 82svh, 860px); display: flex; }
+.pageBg { --gx: 72%; --fx: 74%; }
+.pageGrid { position: relative; z-index: 2; flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; width: 100%; max-width: calc(var(--maxw) + var(--gutter) * 2); margin-inline: auto; padding: calc(var(--header-space) + 24px) var(--gutter) 64px; align-items: center; }
+.pageCopy { display: grid; gap: 24px; align-content: center; justify-items: start; max-width: 36rem; }
+.pageStage { position: relative; align-self: stretch; min-height: 460px; container-type: size; }
+@media (max-width: 899px) {
+  .page { min-height: 0; }
+  .pageGrid { grid-template-columns: 1fr; gap: 8px; padding: calc(var(--header-space) + 16px) 16px 40px; }
+  .pageStage { min-height: 320px; height: 320px; }
+  .pageBg { --gx: 50%; --fx: 50%; }
+}

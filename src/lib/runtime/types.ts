@@ -1,3 +1,4 @@
+import type { ShotName } from '@/lib/buddy/shots';
 import type { StoryRefs } from '@/lib/story/controller';
 
 /* Elements the React components hand to the imperative runtime. Components
@@ -12,6 +13,8 @@ export type StudioRefs = {
   avoid?: HTMLElement | null;
   /** Hero only: chips anchored to 3D points (data-at, data-off, data-align). */
   chips?: HTMLElement[];
+  /** Hero only: the buddy's shot in this studio (the home hero uses 'hero'; other pages pick a pose). */
+  shot?: ShotName;
 };
 
 export type ManifestoRefs = { text: HTMLElement; words: HTMLElement[] };

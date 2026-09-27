@@ -37,6 +37,7 @@
   .mobileNav.open { display: flex; }
   .mobileNav a:not(.mobileBtn) { padding: 14px 14px; border-radius: var(--r-sm); text-decoration: none; font-weight: 650; font-size: 17px; }
   .mobileNav a:not(.mobileBtn):hover { background: var(--bg); }
+  .mobileNav a[aria-current="page"] { color: var(--coral-ink); }
   .mobileNav .mobileBtn { margin-top: 8px; }
 }
 @media (max-width: 899px) {

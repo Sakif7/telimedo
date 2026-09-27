@@ -9,8 +9,6 @@ import { Product } from '@/components/sections/product/Product';
 import { Results } from '@/components/sections/results/Results';
 import { Security } from '@/components/sections/security/Security';
 import { Solutions } from '@/components/sections/solutions/Solutions';
-import { Footer } from '@/components/layout/Footer';
-import { Header } from '@/components/layout/Header';
 import { SayHi } from '@/components/studio/SayHi';
 import { Story } from '@/components/story/Story';
 import { brand } from '@/lib/brand';
@@ -18,7 +16,6 @@ import { brand } from '@/lib/brand';
 export default function Home() {
   return (
     <RuntimeProvider brand={brand.raw}>
-      <Header wordmark={brand.wordmark} />
       <main id="main">
         <Hero />
         <LogoStrip />
@@ -32,7 +29,6 @@ export default function Home() {
         <Faq />
         <BookDemo />
       </main>
-      <Footer wordmarkMono={brand.wordmarkMono} year={new Date().getFullYear()} />
       <SayHi />
     </RuntimeProvider>
   );
