@@ -1,0 +1,47 @@
+/* Studio windows: the lit panels the buddy performs in (hero, story, demo).
+   The WebGL canvas is only ever drawn inside one of these, never under text. */
+.bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; background:
+  radial-gradient(58% 60% at var(--gx, 70%) 42%, var(--studio-glow), transparent 72%),
+  linear-gradient(165deg, var(--studio-top) 8%, var(--studio-bot) 92%); }
+.bg::before { content: ""; position: absolute; inset: 0; background-image: var(--grain); opacity: .16; mix-blend-mode: overlay; pointer-events: none; }
+.bg::after { content: ""; position: absolute; left: var(--fx, 70%); bottom: -14%; width: 90%; height: 44%; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(closest-side, var(--studio-floor), transparent); pointer-events: none; }
+
+.slot { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; }
+.slot.fill { inset: 0; }
+.slot canvas { display: block; width: 100%; height: 100%; }
+
+/* The buddy image shown until the first 3D frame, and kept when WebGL is unavailable. */
+.poster { position: absolute; z-index: 1; left: 0; top: 0; height: 80%; aspect-ratio: 900 / 1100; max-width: none; background: var(--poster) center / contain no-repeat; transform: translateX(-50%); pointer-events: none; transition: opacity .7s ease; }
+.poster:global(.gone) { opacity: 0; }
+/* Hero and demo: placed in the stage box by CSS alone, mirroring the camera fit
+   (body 2.2 x 1.62 world units; 1000 px of poster per 2.2 units, plus 100 px of floor). */
+.poster.fit { --ppu: min(100cqh / 2.2, 100cqw / 1.62); left: 50%; top: calc(50cqh - var(--ppu) * 1.1); height: calc(var(--ppu) * 2.42); }
+
+/* Sonar rings behind his head (hero and demo). */
+.rings { position: absolute; left: var(--hx, 72%); top: var(--hy, 36%); width: 0; height: 0; pointer-events: none; }
+.rings i { position: absolute; left: 0; top: 0; border-radius: 50%; border: 1px solid var(--studio-line); transform: translate(-50%, -50%); }
+.rings i:nth-child(1) { width: calc(420px * var(--hs, 1)); height: calc(420px * var(--hs, 1)); }
+.rings i:nth-child(2) { width: calc(640px * var(--hs, 1)); height: calc(640px * var(--hs, 1)); }
+.rings i:nth-child(3) { width: calc(900px * var(--hs, 1)); height: calc(900px * var(--hs, 1)); }
+.rings i:nth-child(4) { width: calc(1200px * var(--hs, 1)); height: calc(1200px * var(--hs, 1)); }
+.rings i::after { content: ""; position: absolute; inset: -1px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--aqua) 55%, transparent); opacity: 0; animation: sonar 6s ease-out infinite; }
+.rings i:nth-child(2)::after { animation-delay: 1.5s; }
+.rings i:nth-child(3)::after { animation-delay: 3s; }
+.rings i:nth-child(4)::after { animation-delay: 4.5s; }
+@keyframes sonar { 0% { opacity: 0; transform: scale(.94); } 20% { opacity: .55; } 100% { opacity: 0; transform: scale(1.04); } }
+
+/* Glass chips floating beside him, anchored to projected 3D points. */
+.chip { position: absolute; left: 0; top: 0; z-index: 3; display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 10px; border-radius: var(--r-sm); background: var(--glass); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3); box-shadow: inset 0 0 0 1px var(--glass-line), var(--glass-shadow); white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .6s ease; }
+:global(.gl-live) .chip { opacity: 1; }
+.chipT b { display: block; font-size: 14px; line-height: 1.25; font-weight: 650; }
+.chipT small { display: block; font: 500 11.5px/1.3 var(--mono); color: var(--ink-3); letter-spacing: .02em; }
+.ready { display: inline-block; width: 7px; height: 7px; margin-left: 4px; border-radius: 50%; background: var(--good); vertical-align: 2px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--good) 22%, transparent); animation: blink 1.6s steps(2, jump-none) infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+:global(.no-3d) .chip { display: none; }
+@media (max-width: 899px) {
+  .chip { display: none; }
+}
+
+/* the "Say hi" label that follows the cursor over the buddy */
+.sayHi { position: fixed; left: 0; top: 0; z-index: 60; padding: 7px 11px; border-radius: 999px; background: var(--ink); color: var(--bg); font: 500 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; pointer-events: none; opacity: 0; transition: opacity .2s ease; }
+.sayHi:global(.on) { opacity: 1; }
