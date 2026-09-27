@@ -1,0 +1,38 @@
+/* Security and compliance: a dark band in both themes. */
+.band { background: var(--band); color: var(--band-ink); border-radius: var(--radius) var(--radius) 0 0; }
+.band :global(.ph[title]) { color: var(--band-ink); }
+.top { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(32px, 6vw, 96px); align-items: start; margin-bottom: clamp(56px, 7vw, 96px); }
+.head { display: grid; gap: 20px; max-width: 50rem; }
+.head h2 { max-width: 13em; }
+.intro { margin: 0; color: var(--band-ink-2); font-size: 18px; max-width: 34rem; }
+/* compliance claims set in type: the badge, then one line on who it covers */
+.badges { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 14px 36px; }
+.badges li { display: grid; gap: 6px; }
+.claim { display: inline-flex; align-items: center; gap: 10px; font-size: 15.5px; font-weight: 650; }
+.badge { color: #7FD6E6; }
+.badges small { color: var(--band-ink-2); font-size: 13px; }
+.audit { border-radius: var(--r-md); background: linear-gradient(180deg, var(--band-2), var(--band)); box-shadow: inset 0 0 0 1px var(--band-line); padding: 8px 20px 12px; font: 400 13px/1.45 var(--mono); }
+.auditHead { display: flex; justify-content: space-between; gap: 12px; margin: 0; padding: 14px 0; border-bottom: 1px solid var(--band-line); color: var(--band-ink-2); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; }
+.auditHead span:first-child { display: inline-flex; align-items: center; gap: 8px; color: var(--band-ink); }
+.auditHead i { width: 7px; height: 7px; border-radius: 50%; background: #5BD69A; box-shadow: 0 0 0 4px rgba(91, 214, 154, .18); }
+.audit ol { list-style: none; margin: 0; padding: 0; }
+.audit li { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 14px; padding: 12px 0; border-bottom: 1px dashed var(--band-line); color: var(--band-ink-2); }
+.audit li:last-child { border-bottom: 0; }
+.audit time { color: #7FD6E6; }
+.audit b { color: var(--band-ink); font-weight: 500; }
+.audit .id { white-space: nowrap; }
+/* the data sheet: label/value rows between hairlines, two columns whose rows line up */
+.band .sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(32px, 6vw, 96px); border-top-color: var(--band-line); }
+.band .sheet > div { border-bottom-color: var(--band-line); padding: 18px 0; grid-template-columns: minmax(0, 8rem) minmax(0, 1fr); }
+.band .sheet dt { color: #7FD6E6; }
+.band .sheet dd { color: var(--band-ink-2); font-size: 15.5px; }
+@media (max-width: 1023px) {
+  .top { grid-template-columns: 1fr; }
+}
+@media (max-width: 899px) {
+  .band .sheet { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .audit li { grid-template-columns: 1fr; gap: 2px; }
+  .band .sheet > div { grid-template-columns: 1fr; }
+}
