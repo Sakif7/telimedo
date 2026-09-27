@@ -1,7 +1,8 @@
 /* Design tokens, both themes. Light sits on bare :root; dark overrides follow the
    system preference unless data-theme="light" forces light, and data-theme="dark"
-   forces dark. Components never use raw hex values (the product mock and 3D
-   materials are the exceptions). */
+   forces dark. Components never use raw colour values: fixed palettes that look the same in
+   both themes are tokens too. The product mock and the 3D materials are the
+   exceptions (masks may use #000, which only sets transparency). */
 :root {
   --bg: #F2F6F7;
   --bg-2: #E9F0F2;
@@ -42,6 +43,34 @@
   --band-ink: #E6F1F3;
   --band-ink-2: #9BB0B8;
   --band-line: rgba(255, 255, 255, .09);
+  /* fixed palettes, the same in both themes: accents on the always-dark security band,
+     the video call and the tablet, and coloured shadows */
+  --band-accent: #7FD6E6;
+  --band-live: #5BD69A;
+  --band-live-ring: rgba(91, 214, 154, .18);
+  --on-dark: #FFFFFF;
+  --call-bg: #16222A;
+  --call-ink: #EAF3F5;
+  --call-ink-2: #9DB2BA;
+  --call-room: #D6F1F4;
+  --call-button: #25343D;
+  --call-end-ink: #26323A;
+  --call-live-bg: rgba(247, 127, 127, .16);
+  --call-live-ink: #FFB2B0;
+  --call-chip: rgba(20, 31, 37, .74);
+  --call-caption: rgba(20, 31, 37, .82);
+  --call-cc: #4FC3D9;
+  --call-cc-ink: #0F2A31;
+  --call-self-border: rgba(255, 255, 255, .88);
+  --call-shadow: 0 50px 100px -40px rgba(6, 16, 22, .65);
+  --call-self-shadow: 0 10px 24px rgba(10, 20, 26, .22);
+  --call-label-shadow: 0 1px 3px rgba(0, 0, 0, .45);
+  --device-frame: #141D22;
+  --device-screen: #F4F8F9;
+  --device-shadow: 0 0 0 2px #FFFFFF, 0 0 0 3px rgba(20, 40, 48, .12), 0 40px 80px -40px rgba(8, 20, 26, .6);
+  --btn-shadow: 0 14px 30px -16px rgba(224, 84, 84, .9);
+  --btn-shadow-hover: 0 18px 34px -16px rgba(224, 84, 84, 1);
+  --header-shadow: 0 16px 40px -28px rgba(18, 33, 42, .45);
   --scene-mode: light;
   --poster-l: url(/images/poster-light.webp);
   --poster-d: url(/images/poster-dark.webp);

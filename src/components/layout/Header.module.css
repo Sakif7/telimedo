@@ -6,7 +6,7 @@
   -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4);
   box-shadow: inset 0 0 0 1px var(--header-line); transition: box-shadow .3s ease, background-color .3s ease;
 }
-.header.scrolled .bar { box-shadow: inset 0 0 0 1px var(--header-line), 0 16px 40px -28px rgba(18, 33, 42, .45); }
+.header.scrolled .bar { box-shadow: inset 0 0 0 1px var(--header-line), var(--header-shadow); }
 .brand { display: inline-flex; align-items: center; text-decoration: none; flex: none; }
 .brand svg { height: 27px; width: auto; display: block; }
 .nav { display: flex; align-items: center; gap: 2px; margin-inline: auto; }

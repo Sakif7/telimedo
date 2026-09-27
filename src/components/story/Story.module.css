@@ -72,30 +72,30 @@
 .call {
   width: 100%; height: 100%;
   display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 10px; padding: 12px; border-radius: var(--r-md);
-  background: #16222A; color: #EAF3F5; font: 500 13px/1.3 var(--body);
-  box-shadow: 0 50px 100px -40px rgba(6, 16, 22, .65); transform-origin: 50% 50%;
+  background: var(--call-bg); color: var(--call-ink); font: 500 13px/1.3 var(--body);
+  box-shadow: var(--call-shadow); transform-origin: 50% 50%;
 }
 .callTop { display: flex; align-items: center; gap: 10px; padding: 2px 6px 0; white-space: nowrap; }
 .mk { width: 26px; height: 26px; }
 .mk svg { width: 26px; height: 26px; display: block; }
-.live { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(247, 127, 127, .16); color: #FFB2B0; font: 500 10.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
-.live i { width: 7px; height: 7px; border-radius: 50%; background: #F77F7F; animation: blink 1.6s steps(2, jump-none) infinite; }
+.live { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--call-live-bg); color: var(--call-live-ink); font: 500 10.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.live i { width: 7px; height: 7px; border-radius: 50%; background: var(--coral); animation: blink 1.6s steps(2, jump-none) infinite; }
 .callTitle { font-weight: 700; font-size: 14px; }
-.callTimer { color: #9DB2BA; font: 500 12.5px/1 var(--mono); }
-.callDept { margin-left: auto; color: #9DB2BA; display: inline-flex; align-items: center; gap: 6px; }
+.callTimer { color: var(--call-ink-2); font: 500 12.5px/1 var(--mono); }
+.callDept { margin-left: auto; color: var(--call-ink-2); display: inline-flex; align-items: center; gap: 6px; }
 .callDept svg:global(.i) { width: 15px; height: 15px; }
-.callMain { position: relative; overflow: hidden; border-radius: var(--r-sm); background: #D6F1F4; }
+.callMain { position: relative; overflow: hidden; border-radius: var(--r-sm); background: var(--call-room); }
 .callMain > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; max-width: none; }
-.nameChip { position: absolute; left: 12px; top: 12px; padding: 6px 10px; border-radius: var(--r-sm); background: rgba(20, 31, 37, .74); color: #fff; font-weight: 600; font-size: 12px; }
-.selfView { position: absolute; right: 12px; top: 12px; width: 21%; max-width: 124px; aspect-ratio: 3 / 4; overflow: hidden; border-radius: var(--r-sm); border: 2px solid rgba(255, 255, 255, .88); box-shadow: 0 10px 24px rgba(10, 20, 26, .22); }
+.nameChip { position: absolute; left: 12px; top: 12px; padding: 6px 10px; border-radius: var(--r-sm); background: var(--call-chip); color: var(--on-dark); font-weight: 600; font-size: 12px; }
+.selfView { position: absolute; right: 12px; top: 12px; width: 21%; max-width: 124px; aspect-ratio: 3 / 4; overflow: hidden; border-radius: var(--r-sm); border: 2px solid var(--call-self-border); box-shadow: var(--call-self-shadow); }
 .selfView svg { width: 100%; height: 100%; display: block; }
-.selfView span { position: absolute; left: 8px; bottom: 6px; color: #fff; font-weight: 700; font-size: 11px; text-shadow: 0 1px 3px rgba(0, 0, 0, .45); }
-.caption { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); width: max-content; max-width: 86%; margin: 0; padding: 8px 12px; border-radius: var(--r-sm); background: rgba(20, 31, 37, .82); color: #fff; font-size: 14px; line-height: 1.35; }
-.caption b { display: inline-block; margin-right: 7px; padding: 2px 5px; border-radius: var(--r-xs); background: #4FC3D9; color: #0F2A31; font-size: 10px; letter-spacing: .08em; vertical-align: 1px; }
+.selfView span { position: absolute; left: 8px; bottom: 6px; color: var(--on-dark); font-weight: 700; font-size: 11px; text-shadow: var(--call-label-shadow); }
+.caption { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); width: max-content; max-width: 86%; margin: 0; padding: 8px 12px; border-radius: var(--r-sm); background: var(--call-caption); color: var(--on-dark); font-size: 14px; line-height: 1.35; }
+.caption b { display: inline-block; margin-right: 7px; padding: 2px 5px; border-radius: var(--r-xs); background: var(--call-cc); color: var(--call-cc-ink); font-size: 10px; letter-spacing: .08em; vertical-align: 1px; }
 .callBar { display: flex; justify-content: center; gap: 12px; }
-.cb { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #25343D; color: #EAF3F5; }
+.cb { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--call-button); color: var(--call-ink); }
 .cb svg:global(.i) { width: 20px; height: 20px; }
-.cb.end { width: 60px; border-radius: var(--r-pill); background: #F77F7F; color: #26323A; }
+.cb.end { width: 60px; border-radius: var(--r-pill); background: var(--coral); color: var(--call-end-ink); }
 .call:global(.compact) .callDept, .call:global(.compact) .callTimer { display: none; }
 .call:global(.compact) .caption { font-size: 12.5px; bottom: 10px; }
 .call:global(.compact) .cb { width: 38px; height: 38px; }
@@ -103,11 +103,11 @@
 
 .device {
   --r: 26px; --bz: 12px;
-  position: absolute; z-index: 5; border-radius: var(--r); padding: var(--bz); background: #141D22;
-  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 3px rgba(20, 40, 48, .12), 0 40px 80px -40px rgba(8, 20, 26, .6);
+  position: absolute; z-index: 5; border-radius: var(--r); padding: var(--bz); background: var(--device-frame);
+  box-shadow: var(--device-shadow);
   opacity: 0; pointer-events: none;
 }
-.deviceScreen { position: relative; overflow: hidden; border-radius: calc(var(--r) - var(--bz)); background: #F4F8F9; width: 100%; height: 100%; }
+.deviceScreen { position: relative; overflow: hidden; border-radius: calc(var(--r) - var(--bz)); background: var(--device-screen); width: 100%; height: 100%; }
 .deviceScreen > :global(.tmd-app) { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
 .device :global(.tmd-compact) { display: none; }
 .sticky:global(.is-compact) .device :global(.tmd-desk) { display: none; }
