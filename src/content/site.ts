@@ -42,6 +42,7 @@ export const site = {
     mainNav: 'Main',
     openMenu: 'Open menu',
     closeMenu: 'Close menu',
+    darkTheme: 'Dark theme',
   },
 
   nav: {

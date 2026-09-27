@@ -5,11 +5,12 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { site } from '@/content/site';
 import { Button } from '@/components/ui/Button';
+import { ThemeToggle } from './ThemeToggle';
 import s from './Header.module.css';
 
 const nav = site.nav;
 
-/** Floating glass header: page links (the current page is marked), phone menu (Escape closes it). */
+/** Floating glass header: page links (the current page is marked), theme switch, phone menu (Escape closes it). */
 export function Header({ wordmark }: { wordmark: string }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -52,6 +53,7 @@ export function Header({ wordmark }: { wordmark: string }) {
           ))}
         </nav>
         <div className={s.actions}>
+          <ThemeToggle className={s.theme} />
           <a className={s.quiet} href={nav.signIn.href} data-placeholder-link="" title={nav.signIn.placeholder?.note}>
             {nav.signIn.label}
           </a>

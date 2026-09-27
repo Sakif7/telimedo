@@ -17,6 +17,13 @@
 .actions { display: flex; align-items: center; gap: 6px; flex: none; }
 .quiet { color: var(--ink-2); font-weight: 600; font-size: 14.5px; text-decoration: none; padding: 9px 14px; border-radius: 999px; }
 .quiet:hover { color: var(--ink); }
+/* theme switch: a half-lit disc that turns over when the theme changes */
+.theme { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: transparent; color: var(--ink-2); cursor: pointer; transition: color .2s, background-color .2s; }
+.theme:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.theme svg { width: 19px; height: 19px; transition: transform .6s var(--ease); }
+.theme circle { fill: none; stroke: currentColor; stroke-width: 1.6; }
+.theme path { fill: currentColor; }
+.theme[data-theme-now='dark'] svg { transform: rotate(180deg); }
 .menuBtn { display: none; position: relative; width: 44px; height: 44px; border-radius: 50%; border: 0; background: color-mix(in srgb, var(--ink) 7%, transparent); cursor: pointer; }
 .menuBtn span { position: absolute; left: 14px; right: 14px; height: 1.8px; border-radius: 2px; background: var(--ink); transition: transform .35s var(--ease), top .35s var(--ease); }
 .menuBtn span:first-child { top: 18px; }

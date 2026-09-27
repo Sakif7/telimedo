@@ -40,12 +40,15 @@ export const viewport: Viewport = {
   ],
 };
 
+/* Before first paint: mark that scripts run (entrance animations only play then;
+   nothing waits hidden without JS) and apply a theme the visitor picked earlier. */
+const BOOT = `(function(){var d=document.documentElement,c=d.classList;c.add('js');try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')d.setAttribute('data-theme',t)}catch(e){}})()`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
-        {/* Entrance animations only run when scripts do; nothing waits hidden without JS. */}
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        <script dangerouslySetInnerHTML={{ __html: BOOT }} />
       </head>
       <body>
         <a className="skip" href="#main">
