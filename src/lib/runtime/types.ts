@@ -48,5 +48,7 @@ declare global {
     __buddyDtCap?: number;
     /** Tests freeze ambient motion (breathing, blinks, idle drift, auto-waves) for reproducible screenshots. */
     __buddyCalm?: boolean;
+    /** Tests can wait longer before the still replaces a slow-starting 3D (software WebGL is slow), to see the intro. */
+    __buddyLateMs?: number;
   }
 }

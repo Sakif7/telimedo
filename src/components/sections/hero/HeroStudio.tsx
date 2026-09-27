@@ -10,7 +10,8 @@ import s from './Hero.module.css';
 
 const copy = site.hero;
 
-/** The hero studio card. Copy sits at z 2 inside the grid, outside the buddy's box. */
+/** The hero studio card. Copy sits at z 2 inside the grid, outside the buddy's box; the buddy
+    peeks in on load. */
 export function HeroStudio({ children }: { children: ReactNode }) {
   const card = useRef<HTMLDivElement>(null);
   const slot = useRef<HTMLDivElement>(null);
@@ -34,7 +35,7 @@ export function HeroStudio({ children }: { children: ReactNode }) {
           {children}
         </div>
         <div className={s.stage} aria-hidden="true" data-part="stage" ref={stage}>
-          <Poster ref={poster} fit />
+          <Poster ref={poster} fit intro />
         </div>
       </div>
       {copy.chips.map((c, i) => (

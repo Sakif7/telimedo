@@ -5,6 +5,7 @@ import { motion, watchReducedMotion } from '@/lib/motion';
 import { createStory } from '@/lib/story/controller';
 import { KF } from '@/lib/story/timeline';
 import { createPageFx } from './page-fx';
+import { BUDDY_IN_EVENT } from './signals';
 import type { BrandSvgs, Registry } from './types';
 
 /* Wiring (v1 main.js): mounts the product UI, creates the story controller and
@@ -18,6 +19,9 @@ export const ASSETS = {
   desk: '/textures/tex_desk.webp',
   compact: '/textures/tex_compact.webp',
 };
+
+/** If the 3D hasn't drawn by then, the still shows in the first studio and the intro is skipped. */
+const POSTER_LATE_MS = 2500;
 
 /** Test hooks are on in development, and in any build when a script opts in
     (tests set window.__buddyDtCap before load). */
@@ -56,6 +60,13 @@ export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): R
     posters.forEach((p) => p.classList.remove('gone'));
   }
 
+  /* a slow start shows the still in the first studio instead of an empty one */
+  let drawn = false;
+  const lateTimer = window.setTimeout(() => {
+    if (!drawn && !disposed) docEl.classList.add('poster-late');
+  }, window.__buddyLateMs ?? POSTER_LATE_MS);
+  cleanups.push(() => clearTimeout(lateTimer));
+
   /* the 3D engine loads after hydration, in its own chunk */
   import('@/lib/buddy/engine')
     .then(({ BuddyEngine }) => {
@@ -75,9 +86,16 @@ export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): R
         chips: { hero: chips, hi: reg.sayHi ?? null, avoid: reg.hero?.avoid ?? null },
         assets: ASSETS,
         markSvg: brand.mark,
+        intro: () => !motion.reduce && !window.__buddyCalm && !docEl.classList.contains('poster-late'),
+        onIntroDone: () => {
+          if (disposed) return;
+          docEl.classList.add('buddy-in');
+          window.dispatchEvent(new Event(BUDDY_IN_EVENT));
+        },
         onReady: () => docEl.classList.add('gl-ready'),
         onFail: no3d,
         onFirstFrame: () => {
+          drawn = true;
           posters.forEach((p) => p.classList.add('gone'));
           docEl.classList.add('gl-live');
         },
@@ -186,7 +204,7 @@ export function createRuntime(reg: Registry, { brand }: { brand: BrandSvgs }): R
       disposed = true;
       for (let i = cleanups.length - 1; i >= 0; i--) cleanups[i]();
       buddy = null;
-      docEl.classList.remove('no-3d', 'gl-live', 'gl-ready', 'over-buddy');
+      docEl.classList.remove('no-3d', 'gl-live', 'gl-ready', 'over-buddy', 'poster-late', 'buddy-in');
       posters.forEach((p) => p.classList.remove('gone'));
     },
   };

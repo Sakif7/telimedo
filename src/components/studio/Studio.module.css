@@ -13,6 +13,8 @@
 /* The buddy image shown until the first 3D frame, and kept when WebGL is unavailable. */
 .poster { position: absolute; z-index: 1; left: 0; top: 0; height: 80%; aspect-ratio: 900 / 1100; max-width: none; background: var(--poster) center / contain no-repeat; transform: translateX(-50%); pointer-events: none; transition: opacity .7s ease; }
 .poster:global(.gone) { opacity: 0; }
+/* where the buddy peeks in on load, the still waits for the 3D (or shows without WebGL, or once the 3D is late) */
+:global(.js):not(:global(.no-3d)):not(:global(.poster-late)) .poster.intro { opacity: 0; }
 /* Hero and demo: placed in the stage box by CSS alone, mirroring the camera fit
    (body 2.2 x 1.62 world units; 1000 px of poster per 2.2 units, plus 100 px of floor). */
 .poster.fit { --ppu: min(100cqh / 2.2, 100cqw / 1.62); left: 50%; top: calc(50cqh - var(--ppu) * 1.1); height: calc(var(--ppu) * 2.42); }

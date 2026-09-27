@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import { clamp, easeInOut, easeOutBack, lerp, lerpRect, motion, smooth, type Rect } from '@/lib/motion';
+import { clamp, easeInOut, easeOutBack, easeOutCubic, lerp, lerpRect, motion, smooth, type Rect } from '@/lib/motion';
 import type { Story } from '@/lib/story/controller';
 import { conformRing, decalMaterial, glowMaterial, radialTexture } from './glow';
 import { buildPedestal } from './pedestal';
@@ -15,7 +15,9 @@ import { applyTheme, isDarkScene } from './theme';
 /* The three.js engine (v1 buddy.js, ported without changing numbers): model,
    poses, shots, camera fitting, glow, pedestal, tablet flight, lens portal, hero
    chips and pointer. One canvas moves between the studio slots; the runtime's
-   single rAF loop calls frame(). dispose() releases everything. */
+   single rAF loop calls frame(). dispose() releases everything.
+   The first time the hero studio is shown, the buddy peeks in from its bottom
+   edge before rising into place (the intro). */
 
 export type Mode = 'hero' | 'story' | 'cta';
 export type Chip = { el: HTMLElement; at: number[]; off: number[]; align: string; hidden?: boolean };
@@ -28,6 +30,10 @@ export type EngineOptions = {
   assets: { model: string; decoder: string; desk: string; compact: string };
   /** Raw mark SVG, drawn on the back of the tablet. */
   markSvg: string;
+  /** Asked when the first studio is first shown: play the intro? (not with reduced motion or a late start) */
+  intro?: () => boolean;
+  /** The buddy is in place: after the intro, or straight away without one. */
+  onIntroDone?: () => void;
   onReady?: () => void;
   onFail: () => void;
   onFirstFrame?: () => void;
@@ -50,7 +56,7 @@ function webgl2Available() {
 /** Pointer targets that belong to the page, not to the buddy. */
 const INTERACTIVE = 'a, button, input, textarea, select, label, form, [data-interactive]';
 
-export function createBuddy({ story, slots, stages, chips, assets, markSvg, onReady, onFail, onFirstFrame }: EngineOptions) {
+export function createBuddy({ story, slots, stages, chips, assets, markSvg, intro, onIntroDone, onReady, onFail, onFirstFrame }: EngineOptions) {
   if (!webgl2Available()) {
     onFail();
     return null;
@@ -315,6 +321,10 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, onRe
   window.addEventListener('pointerdown', onPointerDown);
 
   let time = 0, introDone = false;
+  /* intro: hidden below the studio's bottom edge, the head peeks up and looks around, then he rises (seconds) */
+  const INTRO = { peek: 0.6, look: 1.1, rise: 0.8 };
+  const INTRO_LEN = INTRO.peek + INTRO.look + INTRO.rise;
+  let introStart = -1, introWaiting = false, introBlinked = false;
   let waveStart = -10, waveEnd = -10, nextAutoWave = 1e9, winkUntil = -1, hopStart = -10, currentWaveW = 0;
   function triggerWave(dur: number) {
     waveStart = time;
@@ -362,9 +372,16 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, onRe
     // entering a studio: start from its own resting state
     for (const n in propState) propState[n].p = 0;
     tablet.presence = m === 'hero' ? 1 : 0;
-    if (m === 'hero' && !introDone) {
+    if (!introDone) {
+      // the intro only plays when the first studio is the first thing he appears in
       introDone = true;
-      nextAutoWave = time + 1.1;
+      if (m === 'hero' && intro?.()) {
+        introWaiting = true;
+        nextAutoWave = 1e9;
+      } else {
+        nextAutoWave = time + 1.1;
+        onIntroDone?.();
+      }
     } else if (nextAutoWave > 1e8) nextAutoWave = time + 1.5;
   }
   // Where the hero poster sits (mirrors the camera fit).
@@ -443,6 +460,28 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, onRe
       e = reduce ? 1 : ctaProgress();
     }
     const poseW = revealSeg ? (reduce ? (r < 0.5 ? 0 : 1) : smooth(0.08, 0.45, k)) : e;
+    let drop = 0, peekLook = -1;
+    if (introWaiting && mode === 'hero') {
+      introWaiting = false;
+      introStart = time;
+      nextAutoWave = time + INTRO_LEN + 0.6;
+    }
+    if (introStart >= 0 && mode === 'hero') {
+      const u = time - introStart;
+      if (u >= INTRO_LEN) {
+        introStart = -1;
+        triggerWave(2.1);
+        onIntroDone?.();
+      } else if (u < INTRO.peek) drop = lerp(1.18, 0.64, easeOutCubic(u / INTRO.peek));
+      else if (u < INTRO.peek + INTRO.look) {
+        peekLook = (u - INTRO.peek) / INTRO.look;
+        drop = 0.64 - Math.sin(Math.PI * peekLook) * 0.02;
+        if (!introBlinked && peekLook > 0.55) {
+          introBlinked = true;
+          startBlink(null);
+        }
+      } else drop = lerp(0.64, 0, easeOutBack((u - INTRO.peek - INTRO.look) / INTRO.rise));
+    }
 
     /* body */
     applyPose(rig, a.pose, b.pose, poseW);
@@ -479,12 +518,17 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, onRe
     vA.subVectors(lookP, headPos).applyQuaternion(rootQInv);
     let yawT = clamp(Math.atan2(vA.x, vA.z), -0.6, 0.6);
     let pitchT = clamp(Math.atan2(vA.y, Math.hypot(vA.x, vA.z)), -0.45, 0.3);
-    if (!reduce && !calm && lookTab < 0.5) {
+    if (peekLook >= 0) {
+      // peeking over the edge: a look to one side, then the other, chin up
+      yawT = Math.sin(peekLook * Math.PI * 2) * 0.5;
+      pitchT = 0.2;
+    } else if (!reduce && !calm && lookTab < 0.5) {
       yawT += Math.sin(time * 0.37) * 0.05;
       pitchT += Math.sin(time * 0.29 + 1) * 0.03;
     }
-    look.yaw = lerp(look.yaw, yawT * track, 1 - Math.exp(-dt * 6));
-    look.pitch = lerp(look.pitch, pitchT * track, 1 - Math.exp(-dt * 6));
+    const lookW = peekLook >= 0 ? 1 : track;
+    look.yaw = lerp(look.yaw, yawT * lookW, 1 - Math.exp(-dt * 6));
+    look.pitch = lerp(look.pitch, pitchT * lookW, 1 - Math.exp(-dt * 6));
     rotateWorld(bones.Neck, up, look.yaw * 0.35);
     rotateWorld(bones.Head, up, look.yaw * 0.65);
     rotateWorld(bones.Head, right, -look.pitch);
@@ -584,7 +628,7 @@ export function createBuddy({ story, slots, stages, chips, assets, markSvg, onRe
     const az = lerp(a.az, b.az, e), el = lerp(a.el, b.el, e);
     camera.position.set(target.x + Math.sin(az) * Math.cos(el) * dist, target.y + Math.sin(el) * dist, target.z + Math.cos(az) * Math.cos(el) * dist);
     camera.lookAt(target);
-    const cx = rect.x + rect.w / 2, cy = rect.y + rect.h / 2;
+    const cx = rect.x + rect.w / 2, cy = rect.y + rect.h / 2 + drop * ppu * fitH;
     camera.setViewOffset(W, H, W / 2 - cx, H / 2 - cy, W, H);
     camera.updateMatrixWorld();
     vA.subVectors(camera.position, target).normalize();

@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import { Bricolage_Grotesque, DM_Mono, Figtree } from 'next/font/google';
-import { preload } from 'react-dom';
 import { site } from '@/content/site';
 import { siteUrl } from '@/lib/site-url';
 import '@/styles/tokens.css';
@@ -39,9 +38,6 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  // The hero poster is the first paint and the LCP element: fetch the one for the current scheme early.
-  preload('/images/poster-light.webp', { as: 'image', fetchPriority: 'high', media: '(prefers-color-scheme: light)' });
-  preload('/images/poster-dark.webp', { as: 'image', fetchPriority: 'high', media: '(prefers-color-scheme: dark)' });
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
