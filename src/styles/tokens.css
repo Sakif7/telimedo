@@ -46,8 +46,6 @@
   /* fixed palettes, the same in both themes: accents on the always-dark security band,
      the video call and the tablet, and coloured shadows */
   --band-accent: #7FD6E6;
-  --band-live: #5BD69A;
-  --band-live-ring: rgba(91, 214, 154, .18);
   --on-dark: #FFFFFF;
   --call-bg: #16222A;
   --call-ink: #EAF3F5;

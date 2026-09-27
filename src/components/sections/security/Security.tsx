@@ -1,18 +1,18 @@
+import type { CSSProperties } from 'react';
 import { site } from '@/content/site';
 import { ComplianceBadge } from '@/components/ui/ComplianceBadge';
+import { Lead } from '@/components/ui/Lead';
 import { Rich } from '@/components/ui/Rich';
 import { Section, SectionTitle } from '@/components/ui/Section';
 import s from './Security.module.css';
 
 const copy = site.security;
+const record = copy.record;
+const tone = { safe: s.safe, rx: s.rx, plain: '' } as const;
 
-/** Record IDs such as Rx-8812 stay on one line (browsers may break after a hyphen). */
-function keepIds(text: string) {
-  return text.split(/\b([A-Z][a-z]?-\d+)\b/).map((part, i) => (i % 2 ? <span key={i} className={s.id}>{part}</span> : part));
-}
-
-/** Security and compliance: the claims (HIPAA and GDPR only), the audit log as
-    the picture, and a data sheet of how patient data is handled. */
+/** Security and compliance: the claims (HIPAA and GDPR only) beside the visit's record, shown as
+    a screen from the app. The safeguards appear on the rows where they happen; the note under it
+    carries the rest (encryption, access, consent, hosting, the BAA). */
 export function Security() {
   return (
     <Section id="security" className={s.band}>
@@ -32,37 +32,34 @@ export function Security() {
             ))}
           </ul>
         </div>
-        <div className={s.audit} data-reveal="">
-          <p className={s.auditHead}>
-            <span>
-              <i />
-              {copy.audit.title}
-            </span>
-            <span>{copy.audit.meta}</span>
+        <div className={s.side}>
+          <figure className={s.record} data-reveal="">
+            <figcaption className={s.recordHead}>
+              <b>
+                {record.title} <span>{record.id}</span>
+              </b>
+              <small>{record.meta}</small>
+              <span className={s.sample}>{record.sample}</span>
+            </figcaption>
+            <ol className={s.rows}>
+              {record.rows.map((r, i) => (
+                <li key={r.time} className={s.row} style={{ '--i': i } as CSSProperties}>
+                  <Lead lead={r.lead} small />
+                  <span className={s.what}>
+                    <b>{r.action}</b>
+                    <small>{r.who}</small>
+                  </span>
+                  <span className={tone[r.tone] ? `${s.tag} ${tone[r.tone]}` : s.tag}>{r.tag}</span>
+                  <time>{r.time}</time>
+                </li>
+              ))}
+            </ol>
+          </figure>
+          <p className={s.note}>
+            <Rich text={copy.note} />
           </p>
-          <ol>
-            {copy.audit.rows.map((r) => (
-              <li key={r.time}>
-                <time>{r.time}</time>
-                <span>
-                  <b>{r.who}</b>
-                  {keepIds(r.what)}
-                </span>
-              </li>
-            ))}
-          </ol>
         </div>
       </div>
-      <dl className={`spec ${s.sheet}`} aria-label={copy.sheetLabel} data-reveal="">
-        {copy.sheet.map((row) => (
-          <div key={row.label}>
-            <dt>{row.label}</dt>
-            <dd>
-              <Rich text={row.value} />
-            </dd>
-          </div>
-        ))}
-      </dl>
     </Section>
   );
 }

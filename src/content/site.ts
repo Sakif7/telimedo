@@ -22,6 +22,9 @@ export type Link = { label: string; href: string; placeholder?: { note: string }
 export type Spec = { label: string; value: Rich };
 /** Leading element of a glass card: real product content, never an icon tile. */
 export type Lead = { kind: 'video' } | { kind: 'rx' } | { kind: 'initials'; text: string } | { kind: 'time'; day: string; time: string };
+/** A row in the security section's visit record: who (as a Lead), what, a tag, when. `tone` colours the tag:
+    safeguards in aqua, the prescription in coral. */
+export type RecordRow = { lead: Lead; action: string; who: string; tag: string; tone: 'safe' | 'rx' | 'plain'; time: string };
 
 export const site = {
   meta: {
@@ -333,26 +336,26 @@ export const site = {
       { badge: 'HIPAA', label: 'compliant', note: 'For clinics serving US patients' },
       { badge: 'GDPR', label: 'compliant', note: 'For clinics serving EU patients' },
     ],
-    audit: {
-      title: 'Audit log',
-      meta: 'Today · sample data',
+    /** The visit's audit trail, shown as a screen from the app. The safeguards appear where they happen. */
+    record: {
+      title: 'Visit record',
+      id: 'P-2291',
+      meta: 'Every view and change is logged',
+      sample: 'Sample data',
       rows: [
-        { time: '10:42:08', who: 'Dr. S. Rivera', what: ' opened the chart of patient P-2291' },
-        { time: '10:42:31', who: 'Dr. S. Rivera', what: ' signed prescription Rx-8812' },
-        { time: '10:43:02', who: 'System', what: ' sent Rx-8812 to Riverside Pharmacy, encrypted' },
-        { time: '10:43:40', who: 'R. Chen', what: ', front desk, booked a follow-up for Tuesday' },
-        { time: '10:44:15', who: 'Patient', what: ' viewed the care plan, consent on file' },
-      ],
+        { lead: { kind: 'initials', text: 'SR' }, action: 'Chart opened', who: 'Dr. S. Rivera, clinician', tag: 'P-2291', tone: 'plain', time: '10:42:08' },
+        { lead: { kind: 'rx' }, action: 'Prescription signed', who: 'Dr. S. Rivera', tag: 'Rx-8812', tone: 'rx', time: '10:42:31' },
+        { lead: { kind: 'rx' }, action: 'Sent to Riverside Pharmacy', who: 'System', tag: 'Encrypted', tone: 'safe', time: '10:43:02' },
+        { lead: { kind: 'initials', text: 'RC' }, action: 'Follow-up booked', who: 'R. Chen, front desk', tag: 'Tuesday', tone: 'plain', time: '10:43:40' },
+        { lead: { kind: 'initials', text: 'PN' }, action: 'Care plan viewed', who: 'Patient', tag: 'Consent on file', tone: 'safe', time: '10:44:15' },
+      ] as RecordRow[],
     },
-    sheetLabel: 'How patient data is protected',
-    sheet: [
-      { label: 'Encryption', value: 'Video, messages and records are encrypted in transit and at rest.' },
-      { label: 'Access', value: 'Each person sees only what their role needs, from front desk to medical director.' },
-      { label: 'Audit', value: 'Every view and change to a patient record is logged and easy to review.' },
-      { label: 'Hosting', value: ['Patient data is hosted in ', ph('the US and the EU', 'Placeholder: your hosting regions'), ', close to your patients.'] },
-      { label: 'BAA', value: [ph('We sign a BAA with every US clinic on any plan.', 'Placeholder: confirm your BAA terms')] },
-      { label: 'Consent', value: 'Captured before the first visit and stored with the record.' },
-    ] as Spec[],
+    note: [
+      'Video, messages and records are encrypted in transit and at rest. Each person sees only what their role needs, from front desk to medical director, and consent is captured before the first visit. Patient data is hosted in ',
+      ph('the US and the EU', 'Placeholder: your hosting regions'),
+      ', close to your patients. ',
+      ph('We sign a BAA with every US clinic on any plan.', 'Placeholder: confirm your BAA terms'),
+    ] as Rich,
   },
 
   pricing: {
