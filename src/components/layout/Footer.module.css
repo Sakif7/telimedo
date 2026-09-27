@@ -6,8 +6,17 @@
 .foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .foot a { text-decoration: none; transition: color .2s; }
 .foot a:hover { color: var(--ink); }
-.mark { margin-top: clamp(56px, 8vw, 110px); color: var(--line); line-height: 0; }
+/* Sign-off: the wordmark set full width, with the buddy peeking over it (a callback to the
+   page-load intro). His head is cropped from the poster, so it follows the theme. */
+.signoff { position: relative; margin-top: clamp(56px, 8vw, 110px); }
+.mark { position: relative; z-index: 1; color: var(--line); line-height: 0; }
 .mark svg { width: 100%; height: auto; display: block; }
+/* the poster is 900 x 1100; his head fills rows 60 to 400, centred */
+.peek { --pw: clamp(92px, 11.5vw, 170px); position: absolute; z-index: 0; left: 44.5%; bottom: 54%; width: var(--pw); height: calc(var(--pw) * .6); background: var(--poster) 50% calc(var(--pw) * -.106) / calc(var(--pw) * 1.59) auto no-repeat; transform-origin: 50% 100%; }
+:global(.js) .signoff:global(.play) .peek { animation: peek 1.6s var(--ease) .35s both; }
+:global(.js) .signoff:global(.play) .mark { animation: markRise 1s var(--ease) both; }
+@keyframes peek { 0% { transform: translateY(78%); } 45% { transform: translateY(-5%); } 62% { transform: translateY(-3%) rotate(-7deg); } 80% { transform: translateY(-3%) rotate(6deg); } 100% { transform: none; } }
+@keyframes markRise { from { opacity: 0; transform: translateY(18%); } to { opacity: 1; transform: none; } }
 .base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px; margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line); font-size: 14px; }
 @media (max-width: 1023px) {
   .foot { grid-template-columns: repeat(4, minmax(0, 1fr)); }

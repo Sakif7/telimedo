@@ -6,7 +6,7 @@ import s from './Footer.module.css';
 
 const copy = site.footer;
 
-/** Footer: link columns, then the wordmark set full width with its pulse lines cut out. */
+/** Footer: link columns, then the sign-off: the wordmark set full width with the buddy peeking over it. */
 export function Footer({ wordmarkMono, year }: { wordmarkMono: string; year: number }) {
   return (
     <footer className={s.footer} data-moment="footer">
@@ -39,7 +39,10 @@ export function Footer({ wordmarkMono, year }: { wordmarkMono: string; year: num
             </div>
           ))}
         </div>
-        <div className={s.mark} aria-hidden="true" dangerouslySetInnerHTML={{ __html: wordmarkMono }} />
+        <div className={s.signoff} data-reveal="" aria-hidden="true">
+          <div className={s.peek} />
+          <div className={s.mark} dangerouslySetInnerHTML={{ __html: wordmarkMono }} />
+        </div>
         <div className={s.base}>
           <FooterRights initialYear={year} />
           <span className="readout">{copy.tagline}</span>
