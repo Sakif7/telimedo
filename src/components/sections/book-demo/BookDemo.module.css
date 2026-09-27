@@ -1,0 +1,31 @@
+.cta { padding: clamp(40px, 5vw, 72px) 10px 10px; }
+.card { position: relative; overflow: hidden; border-radius: var(--radius); isolation: isolate; }
+.bg { --gx: 74%; --fx: 76%; }
+.grid { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 24px; max-width: calc(var(--maxw) + var(--gutter) * 2); margin-inline: auto; padding: clamp(56px, 7vw, 104px) var(--gutter); align-items: center; }
+.copy { display: grid; gap: 22px; max-width: 38rem; }
+.copy h2 { font-size: clamp(46px, 6vw, 96px); line-height: .95; letter-spacing: -0.045em; font-weight: 560; }
+/* The buddy's box. A size container, so the poster can mirror the camera fit in CSS. */
+.stage { position: relative; align-self: stretch; min-height: 520px; container-type: size; }
+.form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 10px; padding: 22px; border-radius: var(--r-md); background: var(--glass); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3); box-shadow: inset 0 0 0 1px var(--glass-line), var(--glass-shadow); }
+.field { display: grid; gap: 7px; align-content: start; }
+.field label { font-size: 13.5px; font-weight: 650; color: var(--ink-2); }
+.field input, .field select { width: 100%; height: 50px; border-radius: var(--r-sm); border: 0; box-shadow: inset 0 0 0 1.5px var(--line); background: var(--surface); color: var(--ink); font: 500 16px/1 var(--body); padding: 0 14px; transition: box-shadow .2s; }
+.field input:hover, .field select:hover { box-shadow: inset 0 0 0 1.5px var(--line-2); }
+.field input:focus, .field select:focus { outline: none; box-shadow: inset 0 0 0 1.5px var(--aqua), 0 0 0 4px color-mix(in srgb, var(--aqua) 22%, transparent); }
+.field input[aria-invalid="true"] { box-shadow: inset 0 0 0 1.5px var(--coral-ink); }
+.err { font-size: 13px; color: var(--coral-ink); font-weight: 600; }
+.failed { grid-column: 1 / -1; margin: 0; }
+.submit { grid-column: 1 / -1; margin-top: 4px; }
+.note { grid-column: 1 / -1; margin: 0; font-size: 13px; color: var(--ink-3); }
+.done { grid-column: 1 / -1; display: none; align-items: center; gap: 10px; margin: 0; padding: 14px; border-radius: var(--r-sm); background: var(--aqua-soft); color: var(--ink); font-weight: 600; font-size: 15px; }
+.done svg:global(.i) { color: var(--aqua-ink); }
+.form.sent .done { display: flex; }
+.form.sent .field, .form.sent .submit { opacity: .5; }
+@media (max-width: 899px) {
+  .cta { padding-inline: 8px; }
+  .grid { grid-template-columns: 1fr; padding: 16px 16px 24px; gap: 0; }
+  /* a definite height (same size as v1's min-height) so the poster's container units resolve */
+  .stage { order: -1; min-height: clamp(300px, 44svh, 440px); height: clamp(300px, 44svh, 440px); }
+  .bg { --gx: 50%; --fx: 50%; }
+  .form { grid-template-columns: 1fr; padding: 16px; }
+}
